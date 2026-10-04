@@ -5,6 +5,8 @@ Code: Galvados · gfx, palettes: Visualize, Criman · Music: Dune
 
 Production: https://www.pouet.net/prod.php?which=1366
 
+<center><img src="main.jpg" /></center>
+
 ## Run on Windows
 
 Double-click **Start.cmd**. It opens the intro in your browser. Keep the small
