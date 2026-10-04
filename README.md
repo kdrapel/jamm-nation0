@@ -7,8 +7,9 @@ Jamm · 64k intro · The Assembly 1995
 - Music: Dune
 
 Production: https://www.pouet.net/prod.php?which=1366
-
 <center><img src="main.jpg" /></center>
+
+Watch it here: https://kdrapel.github.io/jamm-nation0/
 
 ## Run on Windows
 
@@ -31,8 +32,8 @@ as a file does not work because browsers block loading the intro's local assets.
 
 ## Links
 
-The entry page links to three interactive explanations in **effects-explained**:
-whirlpool, wire mesh and cube morph. Each includes controls, source links and
+The entry page links to four interactive explanations in **effects-explained**:
+whirlpool, wire mesh, voxel and cube morph. Each includes controls, source links and
 navigation back to the intro. They work locally without external font downloads.
 
 ## Contents
