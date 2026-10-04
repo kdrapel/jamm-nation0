@@ -1,0 +1,111 @@
+{
+  "format": 1,
+  "fingerprint": "cc7e0d0c8daa73d6ec46a550d3b1070bd65767fabd982d1d7aa6902f3abaa5c0",
+  "intervalUs": 15000000,
+  "endUs": 179985714,
+  "stop": {
+    "kind": "CONTINUOUS_TAIL_HANDOFF",
+    "message": "Translated foreground reached original DPMI tail target 0x12ea"
+  },
+  "segments": [
+    {
+      "index": 0,
+      "startUs": 0,
+      "file": "cc7e0d0c8daa73d6ec46a550d3b1070bd65767fabd982d1d7aa6902f3abaa5c0/0.gz",
+      "bytes": 10430222,
+      "packets": 1372,
+      "sha256": "58240bdfc3a308969ec764e31890923deb54dd30ec95136bda415df1cfa674ef"
+    },
+    {
+      "index": 1,
+      "startUs": 15000000,
+      "file": "cc7e0d0c8daa73d6ec46a550d3b1070bd65767fabd982d1d7aa6902f3abaa5c0/1.gz",
+      "bytes": 4180914,
+      "packets": 1375,
+      "sha256": "370f84dcee41effa37759c18663e44bd1966e589f94b570d3f1d44a336d6dc2a"
+    },
+    {
+      "index": 2,
+      "startUs": 30000000,
+      "file": "cc7e0d0c8daa73d6ec46a550d3b1070bd65767fabd982d1d7aa6902f3abaa5c0/2.gz",
+      "bytes": 11505617,
+      "packets": 1375,
+      "sha256": "bf2981883079c1d2ab3c6fd87a57f17f426134d368b823c108f54e3d6eb58a6a"
+    },
+    {
+      "index": 3,
+      "startUs": 45000000,
+      "file": "cc7e0d0c8daa73d6ec46a550d3b1070bd65767fabd982d1d7aa6902f3abaa5c0/3.gz",
+      "bytes": 13414918,
+      "packets": 1375,
+      "sha256": "0ef88f9fe103ea56a6c4292842c31bde4b65919e11b85219fa815e0e93ee0bdd"
+    },
+    {
+      "index": 4,
+      "startUs": 60000000,
+      "file": "cc7e0d0c8daa73d6ec46a550d3b1070bd65767fabd982d1d7aa6902f3abaa5c0/4.gz",
+      "bytes": 15129281,
+      "packets": 1375,
+      "sha256": "6edaeced907455f16aa9a9d0a9f1f8a62b27b753a33de2d63532f65db9a4e896"
+    },
+    {
+      "index": 5,
+      "startUs": 75000000,
+      "file": "cc7e0d0c8daa73d6ec46a550d3b1070bd65767fabd982d1d7aa6902f3abaa5c0/5.gz",
+      "bytes": 12653488,
+      "packets": 1375,
+      "sha256": "e9f27cc3d1155b23e53193d5940852723c2311560338d1040bf153eb5ddb7c34"
+    },
+    {
+      "index": 6,
+      "startUs": 90000000,
+      "file": "cc7e0d0c8daa73d6ec46a550d3b1070bd65767fabd982d1d7aa6902f3abaa5c0/6.gz",
+      "bytes": 6565573,
+      "packets": 1375,
+      "sha256": "5133d710bbd36c978a428a3d98460cdc50290b911b859f7d872afcf215055259"
+    },
+    {
+      "index": 7,
+      "startUs": 105000000,
+      "file": "cc7e0d0c8daa73d6ec46a550d3b1070bd65767fabd982d1d7aa6902f3abaa5c0/7.gz",
+      "bytes": 7075283,
+      "packets": 1375,
+      "sha256": "cb329132ab2d3dd0b200378186766ee50108d95d45669cd3d999f7344ddfb99e"
+    },
+    {
+      "index": 8,
+      "startUs": 120000000,
+      "file": "cc7e0d0c8daa73d6ec46a550d3b1070bd65767fabd982d1d7aa6902f3abaa5c0/8.gz",
+      "bytes": 7801657,
+      "packets": 1375,
+      "sha256": "0e0db262bfbcd0b95003159820775358f7d857c5898faa94450eb167a4191cfd"
+    },
+    {
+      "index": 9,
+      "startUs": 135000000,
+      "file": "cc7e0d0c8daa73d6ec46a550d3b1070bd65767fabd982d1d7aa6902f3abaa5c0/9.gz",
+      "bytes": 6096552,
+      "packets": 1375,
+      "sha256": "2b9c6d484b2745839b03b370dcd86b3f9caa54b8cf15eeb4b28c49773ff1ff24"
+    },
+    {
+      "index": 10,
+      "startUs": 150000000,
+      "file": "cc7e0d0c8daa73d6ec46a550d3b1070bd65767fabd982d1d7aa6902f3abaa5c0/10.gz",
+      "bytes": 12886817,
+      "packets": 1375,
+      "sha256": "87b415ec76fe81ef2aa30b933d0c294c3bb17b3a1b5cf2a48060f0961381bc1a"
+    },
+    {
+      "index": 11,
+      "startUs": 165000000,
+      "file": "cc7e0d0c8daa73d6ec46a550d3b1070bd65767fabd982d1d7aa6902f3abaa5c0/11.gz",
+      "bytes": 10801770,
+      "packets": 1374,
+      "sha256": "007066f95781d6d3a95334d9d4372dcdb4369a0a1c9d6070339e5faa9d7a931b"
+    }
+  ],
+  "rawBytes": 645312651,
+  "compressedBytes": 118542092,
+  "provenance": "One continuous translated startup run with embedded GF1 PCM; no oracle images or scene scheduling"
+}

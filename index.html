@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Nation Zero by Jamm. The 64k intro from The Assembly 1995, brought to your browser.">
+  <title>Nation Zero — Jamm</title>
+  <link rel="icon" href="data:,">
+  <link rel="preload" href="data/nation0.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="shell">
+    <canvas id="screen" width="320" height="240" aria-label="Nation Zero intro"></canvas>
+    <section id="gate" aria-label="Nation Zero">
+      <canvas id="background" width="320" height="200" aria-hidden="true"></canvas>
+      <div class="shade" aria-hidden="true"></div>
+      <div class="gate-content">
+        <h1><span>Nation</span><span>Zero</span></h1>
+        <p class="group">Jamm</p>
+        <p class="meta">64k intro · The Assembly 1995</p>
+        <dl class="credits">
+          <div><dt>Code</dt><dd>Galvados</dd></div>
+          <div><dt>gfx, palettes</dt><dd>Visualize, Criman</dd></div>
+          <div><dt>Music</dt><dd>Dune</dd></div>
+        </dl>
+        <button id="start" class="start" type="button" disabled>Preparing<span class="dots" aria-hidden="true"></span></button>
+      </div>
+      <footer>
+        <p><kbd>space</kbd> pause · <kbd>← →</kbd> seek · <kbd>f</kbd> fullscreen · <kbd>esc</kbd> stop</p>
+        <nav aria-label="Production links">
+          <a href="https://www.pouet.net/prod.php?which=1366" target="_blank" rel="noopener noreferrer">Pouët</a>
+          <a id="github" href="#" hidden>GitHub</a>
+        </nav>
+      </footer>
+    </section>
+    <div id="hud" hidden>
+      <button id="pause" type="button" aria-label="Pause intro">Pause</button>
+      <button id="stop" type="button">Stop</button>
+      <input id="timeline" type="range" min="0" max="179.9" step="0.1" value="0" aria-label="Seek intro">
+      <output id="time">0:00 / 3:00</output>
+      <button id="fullscreen" type="button">Fullscreen</button>
+    </div>
+    <p id="status" role="status" aria-live="polite"></p>
+  </main>
+  <script type="module" src="app/app.mjs"></script>
+</body>
+</html>
