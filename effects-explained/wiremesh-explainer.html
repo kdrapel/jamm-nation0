@@ -1,0 +1,1299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inside the Chaotic Green Wire Vortex & Phosphor Blur | Nation0 Demoscene Anatomy</title>
+<style>
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at 20% 0%, #282d14 0, transparent 45%), radial-gradient(ellipse at 80% 100%, #281814 0, transparent 50%), var(--bg);
+  color: var(--ink);
+  font: 15px/1.65 Manrope, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+main {
+  max-width: 1240px;
+  margin: auto;
+  padding: 40px 24px 100px;
+}
+.eyebrow, .tag, .mono {
+  font-family: 'DM Mono', monospace;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.eyebrow {
+  font-size: 13px;
+  color: var(--cyan);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.address {
+  color: var(--violet);
+  font-family: 'JetBrains Mono', 'DM Mono', monospace;
+  font-weight: 600;
+  text-transform: none;
+}
+h1 {
+  font-size: clamp(34px, 5.2vw, 60px);
+  line-height: 1.05;
+  letter-spacing: -.05em;
+  margin: 10px 0 16px;
+  font-weight: 800;
+}
+h1 span.accent {
+  background: linear-gradient(135deg, var(--green), #bebe9a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.lead {
+  max-width: 900px;
+  color: #d2d2e7;
+  font-size: 17.5px;
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+.meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.tag {
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 6px 14px;
+  color: #d2d2e7;
+  background: #180c08c0;
+}
+.tag b {
+  color: var(--gold);
+  font-weight: 600;
+}
+.tag.green b { color: var(--green); }
+.tag.violet b { color: var(--violet); }
+.tag.cyan b { color: var(--cyan); }
+
+/* Layout */
+.layout {
+  display: grid;
+  grid-template-columns: 1.22fr .98fr;
+  gap: 22px;
+  margin-bottom: 24px;
+}
+.card {
+  background: linear-gradient(145deg, #281814, #0c0804);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 60px #00000050;
+}
+.card h2 {
+  font-size: 20px;
+  margin: 0 0 6px;
+  letter-spacing: -.02em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sub {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0 0 16px;
+}
+
+/* Screen and Canvas */
+.screen-container {
+  position: relative;
+  background: #000000;
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid #2d351c;
+  overflow: hidden;
+}
+.screen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.view-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.view-tab {
+  background: #180c08;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font: 11px 'DM Mono', monospace;
+  padding: 5px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: .15s ease;
+}
+.view-tab:hover {
+  color: var(--ink);
+  border-color: var(--line-active);
+}
+.view-tab.active {
+  background: #2d351c;
+  border-color: var(--green);
+  color: var(--green);
+  font-weight: 600;
+}
+.screen-canvas-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 2.5;
+  background: #000000;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #282d14;
+}
+.screen-canvas-wrap canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  cursor: crosshair;
+}
+.overlay-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #0c0804e0;
+  border: 1px solid #39412d;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font: 10px 'DM Mono', monospace;
+  color: var(--green);
+  pointer-events: none;
+}
+
+/* Inspector Tooltip */
+.inspector-panel {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px;
+  background: #0c0804;
+  border: 1px solid #2d351c;
+  border-radius: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+}
+.inspect-item {
+  display: flex;
+  flex-direction: column;
+}
+.inspect-label {
+  color: var(--muted);
+  font-size: 9px;
+  text-transform: uppercase;
+}
+.inspect-value {
+  color: var(--ink);
+  font-weight: 500;
+  margin-top: 2px;
+}
+.inspect-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-right: 4px;
+  border: 1px solid #ffffff40;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.btn {
+  background: #281814;
+  color: var(--ink);
+  border: 1px solid #414939;
+  padding: 8px 14px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .15s ease;
+}
+.btn:hover {
+  background: #2d351c;
+  border-color: var(--green);
+  color: #ffffff;
+}
+.btn.primary {
+  background: #2d351c;
+  border-color: #556149;
+  color: var(--green);
+}
+.btn.primary:hover {
+  background: #39412d;
+}
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 180px;
+}
+input[type=range] {
+  accent-color: var(--green);
+  flex: 1;
+  cursor: pointer;
+}
+.readout {
+  min-width: 80px;
+  text-align: right;
+  font: 12px 'DM Mono', monospace;
+  color: var(--gold);
+}
+
+/* Stages List */
+.stages {
+  display: grid;
+  gap: 9px;
+}
+.stage {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  background: #0c0804;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: .2s ease;
+}
+.stage:hover {
+  background: #281814;
+  border-color: #39412d;
+}
+.stage.active {
+  background: #282d14;
+  border-color: var(--green);
+  box-shadow: 0 0 16px #868e6d15;
+}
+.num {
+  font: 13px 'DM Mono', monospace;
+  color: var(--green);
+  padding-top: 2px;
+  font-weight: 600;
+}
+.stage h3 {
+  font-size: 14px;
+  margin: 0 0 3px;
+  font-weight: 700;
+}
+.stage p {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 4px;
+  line-height: 1.5;
+}
+.stage small {
+  font: 10px 'JetBrains Mono', 'DM Mono', monospace;
+  color: var(--gold);
+  display: block;
+}
+
+/* Deep Dive Sections */
+.deep-dive {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-top: 24px;
+}
+.deep-card {
+  background: #180c08;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px;
+}
+.deep-card h3 {
+  font-size: 17px;
+  margin: 0 0 10px;
+  letter-spacing: -.02em;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.badge-tech {
+  font: 10px 'DM Mono', monospace;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: #2d351c;
+  color: var(--green);
+  border: 1px solid #414939;
+}
+
+/* Enhanced Math and Formula Presentation */
+.math-card-group {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0;
+}
+.math-card {
+  background: #0c0804;
+  border: 1px solid #282d14;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.math-card-title {
+  font: 11px 'DM Mono', monospace;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.math-card-title span.source {
+  color: var(--violet);
+  font-weight: 600;
+  text-transform: none;
+}
+.math-formula {
+  font-family: 'JetBrains Mono', 'DM Mono', monospace;
+  font-size: 12.5px;
+  color: #fbebfb;
+  background: #000000;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border-left: 3px solid var(--green);
+  margin-bottom: 8px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+.math-formula.gold-border { border-left-color: var(--gold); }
+.math-formula.pink-border { border-left-color: var(--pink); }
+.math-formula.cyan-border { border-left-color: var(--cyan); }
+.math-formula.violet-border { border-left-color: var(--violet); }
+.math-legend {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Palette Ramp Strip */
+.palette-strip {
+  display: flex;
+  height: 28px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #2d351c;
+  margin: 12px 0 6px;
+}
+.palette-swatch {
+  flex: 1;
+  transition: transform .1s;
+  cursor: pointer;
+}
+.palette-swatch:hover {
+  transform: scaleY(1.3);
+  z-index: 5;
+}
+
+/* Assembly Code Box */
+.asm-code-box {
+  background: #0c0804;
+  border: 1px solid #2d351c;
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #dfdbeb;
+  overflow-x: auto;
+  white-space: pre;
+}
+.asm-opcode { color: var(--green); font-weight: 600; }
+.asm-reg { color: var(--gold); }
+.asm-num { color: var(--violet); }
+.asm-comment { color: #6d7159; font-style: italic; }
+.asm-label { color: var(--pink); font-weight: 700; }
+
+p.desc {
+  font-size: 13.5px;
+  color: #bebe9a;
+  margin: 8px 0 12px;
+  line-height: 1.6;
+}
+
+/* Detail Box */
+.detail-box {
+  background: #0c0804;
+  border-left: 3px solid var(--green);
+  border-radius: 0 10px 10px 0;
+  padding: 14px 18px;
+  margin-top: 14px;
+  font-size: 13.5px;
+  color: #d2d2e7;
+}
+.detail-box b {
+  color: var(--ink);
+}
+
+/* Flow Section */
+.flow-card {
+  margin-top: 24px;
+}
+.flow-diagram {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin: 18px 0;
+}
+.flow-step {
+  position: relative;
+  background: #0c0804;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 10px;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+}
+.flow-step:not(:last-child):after {
+  content: '→';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--green);
+  font-size: 16px;
+  font-weight: 700;
+  z-index: 3;
+}
+.flow-step strong {
+  display: block;
+  color: var(--green);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.flow-step span {
+  color: #bebe9a;
+  font-size: 10.5px;
+  display: block;
+}
+.flow-step small {
+  color: var(--violet);
+  font-size: 9.5px;
+  margin-top: 6px;
+  display: block;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+  .layout, .deep-dive {
+    grid-template-columns: 1fr;
+  }
+  .flow-diagram {
+    grid-template-columns: 1fr;
+  }
+  .flow-step:not(:last-child):after {
+    content: '↓';
+    right: 50%;
+    top: auto;
+    bottom: -12px;
+    transform: translateX(50%);
+  }
+}
+footer {
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: #a2a286;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+footer a {
+  color: var(--green);
+  text-decoration: none;
+}
+footer a:hover {
+  text-decoration: underline;
+}
+</style>
+<link rel="stylesheet" href="nation0-theme.css">
+</head>
+<body>
+<main>
+<nav class="explanation-nav" aria-label="Effects explained"><a class="home" href="../index.html">← Nation Zero</a><a href="whirlpool-explainer.html">Whirlpool</a><a href="wiremesh-explainer.html" aria-current="page">Wire mesh</a><a href="cube-morph-explainer.html">Cube morph</a><a href="voxel-explainer.html">Voxel</a></nav>
+  <div class="eyebrow">
+    <span>Nation0 Effect Anatomy</span> · 
+    <span class="address">fn_6424a / fn_644e8 / fn_645bd @ 0x6424a</span>
+  </div>
+  <h1>Inside the <span class="accent">Chaotic Green Wire Vortex &amp; Phosphor Blur.</span></h1>
+  <p class="lead">
+    How Nation0 generates an organic, tumbling 3D wire vortex from a 15-point base template perturbed by a 3-call LCG PRNG across 75 rings, rendered with self-modifying perspective projection and a parallel 4-tap phosphor decay filter.
+  </p>
+
+  <div class="meta">
+    <span class="tag">Timeline: <b>~02:15 to ~02:30 in Demo</b></span>
+    <span class="tag green">Geometry: <b>75 Deformed Rings × 15 Vertices (1,125 3D Points)</b></span>
+    <span class="tag cyan">Chaos Generator: <b>3-Call 32-bit LCG PRNG (fn_64b19)</b></span>
+    <span class="tag violet">VGA Pipeline: <b>320×160 Centered Video Region @ A1900</b></span>
+    <span class="tag">Filter: <b>4-Tap Spatial Feedback Blur (blurBuffer)</b></span>
+  </div>
+
+  <section class="review-note"><strong>About this illustration</strong><p>The interactive preview illustrates line rasterization and feedback using generated rings. Its closed rings, connecting struts, clipping, and blur boundaries are simplified; the original draws adjacent point pairs and uses signed word arithmetic. Depth color is a per-record shade, not a Z-buffer.</p></section>
+<div class="layout">
+    <!-- Interactive View & Canvas -->
+    <section class="card">
+      <div class="screen-header">
+        <h2>Interactive Pipeline Inspector</h2>
+      </div>
+      <div class="screen-container">
+        <div class="screen-header">
+          <div class="view-tabs" id="viewTabs">
+            <button class="view-tab active" data-mode="composite">Full Composite (Chaotic Mesh + Blur)</button>
+            <button class="view-tab" data-mode="wireframe">Wireframe Only (No Blur)</button>
+            <button class="view-tab" data-mode="blur">Blur Feedback Buffer Only</button>
+            <button class="view-tab" data-mode="depth">Depth Fog Heatmap (Per-Record Shade)</button>
+            <button class="view-tab" data-mode="template">15-Point Profile · Draw Order</button>
+          </div>
+          <span class="overlay-badge" id="canvasBadge">COMPOSITE · CHAOTIC VORTEX + PHOSPHOR BLUR</span>
+        </div>
+
+        <div class="screen-canvas-wrap">
+          <canvas id="wireCanvas" width="320" height="160" aria-label="Interactive simulation of the Nation0 green wire vortex and blur rendering pipeline"></canvas>
+        </div>
+
+        <!-- Live Pixel Inspector -->
+        <div class="inspector-panel" id="inspectorPanel">
+          <div class="inspect-item">
+            <span class="inspect-label">Screen Pos (X, Y)</span>
+            <span class="inspect-value" id="inspCoord">160, 80</span>
+          </div>
+          <div class="inspect-item">
+            <span class="inspect-label">Raw Pixel Index</span>
+            <span class="inspect-value" id="inspIndex">Index: 0x00</span>
+          </div>
+          <div class="inspect-item">
+            <span class="inspect-label">Depth Shade / Fog</span>
+            <span class="inspect-value" id="inspDepth">Depth Z: ~350</span>
+          </div>
+          <div class="inspect-item">
+            <span class="inspect-label">Phosphor RGB</span>
+            <span class="inspect-value" id="inspRgb"><span class="inspect-swatch" id="inspSwatch"></span>(0, 0, 0)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="btn primary" id="btnToggle">Pause</button>
+        <button class="btn" id="btnStep">Step Frame</button>
+        <div class="slider-group">
+          <input id="phaseSlider" type="range" min="0" max="360" value="45" aria-label="3D Mesh Flight Phase">
+          <span id="phaseReadout" class="readout">PHASE 045°</span>
+        </div>
+        <button class="btn" id="btnSpeed">1× Speed</button>
+        <button class="btn" id="btnRegen">Re-seed PRNG</button>
+      </div>
+
+      <div class="detail-box" id="detailBox">
+        <b>Active Inspection:</b> Full composite mode. The chaotic 3D wire ribbons tumble toward the camera, their lines softly diffusing in the 4-tap feedback buffer to create a glowing green phosphor trail.
+      </div>
+    </section>
+
+    <!-- Execution Sequence Stages -->
+    <section class="card">
+      <h2>Rendering Pipeline Stages</h2>
+      <p class="sub">Click a stage to inspect its specific math and memory registers.</p>
+      <div class="stages" id="stagesList">
+        <div class="stage active" data-stage="0">
+          <span class="num">01</span>
+          <div>
+            <h3>Chaotic Ring Generation (LCG PRNG)</h3>
+            <p>At initialization, 75 rings are built from a 15-vertex template (<code>0x60f40</code>), applying 3 PRNG calls per ring: random rotation angle θ, random Δ Y, and random Δ X.</p>
+            <small>fn_6424a @ 0x642cc &amp; fn_64b19 @ 0x64b19 · 75 records × 0x7a bytes</small>
+          </div>
+        </div>
+
+        <div class="stage" data-stage="1">
+          <span class="num">02</span>
+          <div>
+            <h3>Frame Diffusion &amp; Phosphor Blur Filter</h3>
+            <p>Every frame begins with a dual-pixel 4-tap box filter over the working buffer to create luminous CRT phosphor decay trails.</p>
+            <small>blurBuffer in fn_6424a @ 0x6425c · Buffer DS:[0x60f7c]</small>
+          </div>
+        </div>
+
+        <div class="stage" data-stage="2">
+          <span class="num">03</span>
+          <div>
+            <h3>VGA Screen Buffer Blit</h3>
+            <p>160 scanlines are copied via 32-bit dword writes to VGA memory segment <code>A1900</code>, centered on the 320×200 display.</p>
+            <small>copyRowsToEs @ 0x6428c · Target ES:[0xa1900]</small>
+          </div>
+        </div>
+
+        <div class="stage" data-stage="3">
+          <span class="num">04</span>
+          <div>
+            <h3>Self-Modifying 3D Rotation &amp; Projection</h3>
+            <p>Rotates (X, Y) vertices in 3D camera space, applies perspective division (focal length = 250), advances depth Z (Z ← Z - 8), and wraps near vertices (Z &lt; 1 → 700).</p>
+            <small>fn_644e8 @ 0x644e8 · Patches IMUL operands in live code</small>
+          </div>
+        </div>
+
+        <div class="stage" data-stage="4">
+          <span class="num">05</span>
+          <div>
+            <h3>Depth-Cued Fog &amp; Bresenham Line Loops</h3>
+            <p>Assigns green phosphor shades based on Z-depth (<code>color = 21 - Z/32</code>) and rasterizes 14 adjacent segments from each 15-point record.</p>
+            <small>fn_645bd &amp; fn_64644 @ 0x645bd · 75 rings × 15 segments</small>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Deep Dive Math & Transparency Explanations -->
+  <div class="deep-dive">
+    <!-- Deep Dive 1: Why the Mesh is Chaotic -->
+    <div class="deep-card">
+      <h3>
+        Why the Mesh is Chaotic: The 3-Call LCG PRNG
+        <span class="badge-tech">fn_64b19 &amp; fn_64471</span>
+      </h3>
+      <p class="desc">
+        Unlike static terrain grids, Nation0 builds a <strong>chaotic, twisting ribbon vortex</strong>. The engine stores a single 15-vertex polygon template at <code>0x60f40</code> and deforms it 75 times using a 32-bit multiply-add-rotate pseudorandom generator:
+      </p>
+
+      <div class="math-card-group">
+        <div class="math-card">
+          <div class="math-card-title">1. 32-Bit Multiply-Add-Rotate PRNG <span class="source">fn_64b19 @ 0x64b19</span></div>
+          <div class="math-formula violet-border">State_{n+1} = ROL_3( ( State_n × 0x41FBF0E7 + 0x00904E19 ) mod 2³² )
+Temporary = (State_n × 0x41FBF0E7 + 0x00904E19) mod 2³²
+Result = Temporary >>> 15   // returned BEFORE rotating stored state</div>
+          <div class="math-legend">State at <code>DS:[0x63c15]</code>. Uses 32-bit multiplier and 3-bit left rotate to achieve pseudo-random distribution with low CPU cycles.</div>
+        </div>
+
+        <div class="math-card">
+          <div class="math-card-title">2. Three Random Invocations Per Ring <span class="source">0x642cc..0x64300</span></div>
+          <div class="math-formula cyan-border">θ_{row} = PRNG() & 0xFFF                  <span class="comment">// Random Angle: 0..4095 (0..2π)</span>
+ΔY     = ⌊ ((PRNG() & 0x1FF) × 11) / 16 ⌋ - 176  <span class="comment">// Offset Y: -176..+175</span>
+ΔX     = ⌊ ((PRNG() & 0x1FF) × 11) / 16 ⌋ - 176  <span class="comment">// Offset X: -176..+175</span></div>
+          <div class="math-legend">Every ring receives an independent random rotational orientation and an eccentric translation in 3D space.</div>
+        </div>
+
+        <div class="math-card">
+          <div class="math-card-title">3. Template Vertex Rotation <span class="source">fn_64471 @ 0x64471</span></div>
+          <div class="math-formula gold-border">X_{rot} = ⌊ ( (X_{template} + ΔX) · cos(θ_{row}) - (Y_{template} + ΔY) · sin(θ_{row}) ) / 512 ⌋
+Y_{rot} = ⌊ ( (X_{template} + ΔX) · sin(θ_{row}) + (Y_{template} + ΔY) · cos(θ_{row}) ) / 512 ⌋</div>
+          <div class="math-legend">Rotates each of the 15 template points (X_k, Y_k) around the center by the ring's unique angle θ_row.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deep Dive 2: 3D Projection & Self-Modifying Math -->
+    <div class="deep-card">
+      <h3>
+        Fixed-Point Plane Rotation &amp; Perspective Projection
+        <span class="badge-tech">fn_644e8 / 0x644e8</span>
+      </h3>
+
+      <p class="desc">
+        In each frame, the camera rotates around the chaotic vortex. Rather than reading rotation matrices from RAM, the CPU <strong>patches instruction immediates directly in code</strong>:
+      </p>
+
+      <div class="math-card-group">
+        <div class="math-card">
+          <div class="math-card-title">1. Self-Patched 3D Camera Rotation <span class="source">0x6454c</span></div>
+          <div class="math-formula">A = (coordinate₀ · sine + coordinate₁ · cosine) &gt;&gt; 9
+B = (coordinate₀ · cosine − coordinate₁ · sine) &gt;&gt; 9</div>
+          <div class="math-legend">The CPU writes current sin and cos values directly into four <code>IMUL</code> instruction immediates at runtime.</div>
+        </div>
+
+        <div class="math-card">
+          <div class="math-card-title">2. Perspective Projection &amp; Depth Flight <span class="source">0x64572</span></div>
+          <div class="math-formula pink-border">X_{screen} = trunc( ( X_{cam} · 250 ) / Z_{depth} ) + 160
+Y_{screen} = trunc( ( Y_{cam} · 250 ) / Z_{depth} ) + 100
+Z_{depth}  = Z_{depth} - 8   <span class="comment">// When Z &lt; 1, wrap to 700 (Endless tunnel flight)</span></div>
+          <div class="math-legend">Perspective scaling via signed <code>IDIV</code> with focal distance 250. Near vertices wrap back to Z=700.</div>
+        </div>
+
+        <div class="math-card">
+          <div class="math-card-title">3. Depth-Cued Fog &amp; Color Ramp <span class="source">fn_645bd @ 0x645c3</span></div>
+          <div class="math-formula cyan-border">ColorIndex = max( 0, 21 - ⌊ Z_{depth} / 32 ⌋ )</div>
+          <div class="math-legend">Near rings receive glowing green (21); distant rings fade smoothly into deep emerald (7) and pitch black (0).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deep Dive 3: The Assembly Blur Inner Loop & Parallel Math -->
+  <div class="deep-card" style="margin-top: 24px;">
+    <h3>
+      The Dual-Pixel x86 Blur Assembly Loop
+      <span class="badge-tech">blurBuffer @ 0x6425c</span>
+    </h3>
+    <p class="desc">
+      To apply an in-place four-tap filter to 53,120 bytes per pass, the inner loop processes <strong>two 8-bit pixels in parallel</strong> using the 16-bit register <code>AX</code> (split as <code>AL</code> and <code>AH</code>):
+    </p>
+
+    <div class="asm-code-box"><span class="asm-label">loc_6425C:</span>
+    <span class="asm-opcode">mov</span>     <span class="asm-reg">dl</span>,  <span class="asm-num">byte ptr [esi + 1]</span>    <span class="asm-comment">; DL = right neighbor pixel</span>
+    <span class="asm-opcode">mov</span>     <span class="asm-reg">al</span>,  <span class="asm-num">byte ptr [esi - 1]</span>    <span class="asm-comment">; AL = left neighbor pixel</span>
+    <span class="asm-opcode">add</span>     <span class="asm-reg">al</span>,  <span class="asm-reg">dl</span>                    <span class="asm-comment">; AL = left + right</span>
+    <span class="asm-opcode">add</span>     <span class="asm-reg">al</span>,  <span class="asm-num">byte ptr [esi - 140h]</span> <span class="asm-comment">; AL = left + right + top (stride = 320 = 140h)</span>
+    <span class="asm-opcode">mov</span>     <span class="asm-reg">bl</span>,  <span class="asm-num">byte ptr [esi]</span>        <span class="asm-comment">; BL = center pixel 1</span>
+    <span class="asm-opcode">add</span>     <span class="asm-reg">al</span>,  <span class="asm-reg">bl</span>                    <span class="asm-comment">; AL = sum of 4 taps for pixel 1</span>
+    <span class="asm-opcode">mov</span>     <span class="asm-reg">ah</span>,  <span class="asm-reg">bl</span>                    <span class="asm-comment">; AH = left neighbor for pixel 2 (center 1)</span>
+    <span class="asm-opcode">add</span>     <span class="asm-reg">ah</span>,  <span class="asm-num">byte ptr [esi + 2]</span>    <span class="asm-comment">; AH = left + right neighbor for pixel 2</span>
+    <span class="asm-opcode">add</span>     <span class="asm-reg">ah</span>,  <span class="asm-num">byte ptr [esi - 13Fh]</span> <span class="asm-comment">; AH = left + right + top neighbor for pixel 2</span>
+    <span class="asm-opcode">add</span>     <span class="asm-reg">ah</span>,  <span class="asm-reg">dl</span>                    <span class="asm-comment">; AH = sum of 4 taps for pixel 2</span>
+    <span class="asm-opcode">and</span>     <span class="asm-reg">eax</span>, <span class="asm-num">0FFFFFCFCh</span>           <span class="asm-comment">; Clear lower 2 bits of AL and AH</span>
+    <span class="asm-opcode">shr</span>     <span class="asm-reg">eax</span>, <span class="asm-num">2</span>                     <span class="asm-comment">; Parallel divide by 4! (both AL and AH / 4)</span>
+    <span class="asm-opcode">mov</span>     <span class="asm-num">word ptr [esi]</span>, <span class="asm-reg">ax</span>         <span class="asm-comment">; Write 2 blurred pixels simultaneously to buffer!</span>
+    <span class="asm-opcode">add</span>     <span class="asm-reg">esi</span>, <span class="asm-num">2</span>
+    <span class="asm-opcode">dec</span>     <span class="asm-reg">ecx</span>
+    <span class="asm-opcode">jnz</span>     <span class="asm-label">loc_6425C</span></div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 14px;">
+      <div style="background: #0c0804; padding: 12px 14px; border-radius: 8px; border: 1px solid #282d14;">
+        <strong style="color: var(--green); display: block; font-size: 13px; margin-bottom: 4px;">1. Parallel 16-bit Bitmask</strong>
+        <p style="font-size: 12.5px; color: #bebe9a; margin: 0;">
+          The bitmask <code>AND EAX, 0xFFFFFCFC</code> clears bits 0 and 1 of both <code>AL</code> and <code>AH</code> so that <code>SHR EAX, 2</code> divides both 8-bit bytes simultaneously without bit bleeding.
+        </p>
+      </div>
+      <div style="background: #0c0804; padding: 12px 14px; border-radius: 8px; border: 1px solid #282d14;">
+        <strong style="color: var(--gold); display: block; font-size: 13px; margin-bottom: 4px;">2. Vertical Scanline Stride</strong>
+        <p style="font-size: 12.5px; color: #bebe9a; margin: 0;">
+          The memory offset <code>-0x140</code> corresponds exactly to 320 bytes (one row above in Mode 13h linear framebuffer memory).
+        </p>
+      </div>
+      <div style="background: #0c0804; padding: 12px 14px; border-radius: 8px; border: 1px solid #282d14;">
+        <strong style="color: var(--cyan); display: block; font-size: 13px; margin-bottom: 4px;">3. In-Place Feedback and Truncation</strong>
+        <p style="font-size: 12.5px; color: #bebe9a; margin: 0;">
+          The filter operates in-place on working buffer <code>0x60f7c</code>. Left, right, above, and center are averaged in scan order. Earlier writes affect later samples. Truncation dissipates low values; a constant low-valued field is preserved, so there is no universal 3/4 decay factor.
+        </p>
+      </div>
+    </div>
+
+    <div style="margin-top: 18px;">
+      <div style="font: 11px 'DM Mono', monospace; color: var(--muted); margin-bottom: 6px;">GREEN PHOSPHOR DAC PALETTE RAMP (INDICES 0 TO 22):</div>
+      <div class="palette-strip" id="paletteStrip" aria-label="Green phosphor palette gradient"></div>
+      <div style="display: flex; justify-content: space-between; font: 10px 'DM Mono', monospace; color: var(--muted); margin-top: 4px;">
+        <span>Index 0 (Black Background)</span>
+        <span>Index 7..21 (Emerald to Glowing Green)</span>
+        <span>Index 22 (White Highlight)</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="deep-card" style="margin-top:24px"><h3>Clipping and Bresenham: how endpoints become pixels</h3>
+<p class="desc"><a href="../src/fn-64644.mjs">fn_64644 (0x64644..0x64b0f)</a> first clips signed 16-bit endpoints against X = 0..318 and the current Y bounds at DS:[0x6373c..0x6373e]. Intersections use signed integer division. The modified endpoints are written back to the caller, which chains the next segment from those words.</p>
+<pre class="math-formula">major = max(abs(dx), abs(dy)); minor = min(abs(dx), abs(dy))
+error = 2 * minor − major
+if error &lt; 0: advance only on major axis; error += 2 * minor
+else: advance on both axes; error += 2 * (minor − major)</pre>
+<p class="desc">This is the integer error-accumulator idea behind Bresenham: additions and comparisons decide when the minor coordinate must catch up. Nation0 specializes it with signed word arithmetic, linear pointer steps (±1, ±320, or diagonal combinations), a 0x4000 error bias, and paired writes walking inward from both ends. The second endpoint is pre-stepped; very short segments have a special early exit. The interactive preview uses a conventional single-ended Bresenham implementation, so its endpoint coverage is illustrative rather than byte-identical.</p>
+<p class="desc">The original mesh path has no per-pixel depth test: fn_645bd chooses a shade for each record, calls the line helper for adjacent pairs, and lets later writes overwrite earlier ones. The blur pass precedes the VGA transfer; new lines enter the working buffer for the next displayed frame. The transfer copies 316 bytes per row, skipping the final four bytes, over 160 rows.</p></section>
+<!-- Visual Pipeline Summary -->
+  <section class="card flow-card">
+    <h2>Complete Frame Pipeline Overview</h2>
+    <div class="flow-diagram">
+      <div class="flow-step">
+        <strong>1. Phosphor Blur</strong>
+        <span>4-Tap Box Feedback<br>on Frame Buffer</span>
+        <small>blurBuffer @ 0x6425c</small>
+      </div>
+      <div class="flow-step">
+        <strong>2. VGA Transfer</strong>
+        <span>Copy 320×160 Region<br>to Segment A1900</span>
+        <small>copyRowsToEs @ 0x6428c</small>
+      </div>
+      <div class="flow-step">
+        <strong>3. 3D Transform</strong>
+        <span>Self-Modifying Rotate<br>&amp; Perspective Project</span>
+        <small>fn_644e8 @ 0x644e8</small>
+      </div>
+      <div class="flow-step">
+        <strong>4. Depth Fog</strong>
+        <span>Assign Color = 21 - Z/32<br>&amp; Draw Clipped Lines</span>
+        <small>fn_645bd &amp; fn_64644</small>
+      </div>
+      <div class="flow-step">
+        <strong>5. Timer &amp; Loop</strong>
+        <span>Advance Depth Z -= 8<br>&amp; Consume PIT Events</span>
+        <small>finishFn6424aFrame</small>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>Source References: <a href="../src/fn-6424a.mjs">src/fn-6424a.mjs</a> · <a href="../src/fn-644e8.mjs">src/fn-644e8.mjs</a> · <a href="../src/fn-645bd.mjs">src/fn-645bd.mjs</a> · <a href="../src/fn-64b19.mjs">src/fn-64b19.mjs</a> · <a href="../src/fn-64471.mjs">src/fn-64471.mjs</a></div>
+    <div>Nation0 x86 Reverse Engineering &amp; Preservation Project</div>
+  </footer>
+</main>
+
+<script>
+// Authentic Green Phosphor palette from oracle/continuous-frame-trace/05-wire.palette.bin
+const WIRE_PALETTE_RAW = [
+  [0,0,0],[12,3,0],[13,5,0],[14,9,0],[16,12,0],[17,16,0],[17,19,0],
+  [10,25,0],[0,31,0],[0,33,0],[0,35,3],[0,38,7],[0,41,11],[1,44,16],[2,47,21],
+  [4,50,26],[7,50,28],[11,51,30],[14,52,32],[18,53,35],[31,56,43],[46,59,52],[62,62,62]
+];
+
+// Convert 6-bit VGA DAC (0..63) to 8-bit RGB (0..255)
+const WIRE_RGB = WIRE_PALETTE_RAW.map(([r,g,b]) => [
+  Math.round(r * 255 / 63),
+  Math.round(g * 255 / 63),
+  Math.round(b * 255 / 63)
+]);
+
+// Build Palette Strip in HTML
+const paletteStrip = document.getElementById('paletteStrip');
+WIRE_RGB.forEach((rgb, idx) => {
+  const swatch = document.createElement('div');
+  swatch.className = 'palette-swatch';
+  swatch.style.background = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+  swatch.title = `Index ${idx} -> RGB(${rgb.join(',')})`;
+  paletteStrip.appendChild(swatch);
+});
+
+// Canvas and State
+const canvas = document.getElementById('wireCanvas');
+const ctx = canvas.getContext('2d');
+const phaseSlider = document.getElementById('phaseSlider');
+const phaseReadout = document.getElementById('phaseReadout');
+const btnToggle = document.getElementById('btnToggle');
+const btnStep = document.getElementById('btnStep');
+const btnSpeed = document.getElementById('btnSpeed');
+const btnRegen = document.getElementById('btnRegen');
+const viewTabs = document.querySelectorAll('.view-tab');
+const canvasBadge = document.getElementById('canvasBadge');
+const detailBox = document.getElementById('detailBox');
+
+const WIDTH = 320;
+const HEIGHT = 160;
+
+// Internal 8-bit Frame Buffer (matching DS:[0x60f7c])
+const frameBuffer = new Uint8Array(WIDTH * HEIGHT);
+
+let running = true;
+let currentPhase = 45;
+let viewMode = 'composite';
+let speedMultiplier = 1;
+let lastTimestamp = 0;
+
+// Mouse coordinates on canvas
+let hoverX = 160, hoverY = 80;
+
+// Authentic 15-Point Base Template Vertices from 0x60f40 in NATION0.EXE:
+const BASE_TEMPLATE = [
+  [-276, -26],
+  [-232, 0],
+  [-178, 14],
+  [-146, 0],
+  [-108, 2],
+  [-74, -14],
+  [-38, -8],
+  [0, 0],
+  [56, 26],
+  [94, 14],
+  [128, 8],
+  [146, -14],
+  [198, -20],
+  [244, -8],
+  [344, -2]
+];
+
+// Authentic 32-bit LCG PRNG (fn_64b19)
+let prngState = 0x12345678;
+
+function stepPRNG() {
+  const product = BigInt(prngState >>> 0) * 0x41fbf0e7n;
+  let eax = (Number(product & 0xffffffffn) + 0x00904e19) >>> 0;
+  prngState = eax;
+  const shiftedOut = eax >>> 15;
+  const rotated = ((prngState << 3) | (prngState >>> 29)) >>> 0;
+  prngState = rotated;
+  return shiftedOut;
+}
+
+// 75 Rings × 15 Points = 1,125 Vertices
+const NUM_RINGS = 75;
+const NUM_POINTS_PER_RING = 15;
+
+// Ring Data Structures
+const ringZ = new Float32Array(NUM_RINGS);
+const ringX = new Float32Array(NUM_RINGS * NUM_POINTS_PER_RING);
+const ringY = new Float32Array(NUM_RINGS * NUM_POINTS_PER_RING);
+
+function generateChaoticMesh(initialSeed = 0x63c15) {
+  prngState = initialSeed;
+  let currentZ = 700;
+
+  for (let r = 0; r < NUM_RINGS; r++) {
+    // 1. Random Ring Rotation Angle
+    const angleRaw = stepPRNG() & 0xfff; // 0..4095
+    const angleRad = (angleRaw / 4096) * Math.PI * 2;
+    const cosAngle = Math.cos(angleRad);
+    const sinAngle = Math.sin(angleRad);
+
+    // 2. Random Y Offset (-176..+175)
+    let rawY = stepPRNG() & 0x1ff;
+    let offsetY = Math.floor((rawY * 11) / 16) - 176;
+
+    // 3. Random X Offset (-176..+175)
+    let rawX = stepPRNG() & 0x1ff;
+    let offsetX = Math.floor((rawX * 11) / 16) - 176;
+
+    // 4. Transform Template Points
+    for (let p = 0; p < NUM_POINTS_PER_RING; p++) {
+      const idx = r * NUM_POINTS_PER_RING + p;
+      const tx = BASE_TEMPLATE[p][0] + offsetX;
+      const ty = BASE_TEMPLATE[p][1] + offsetY;
+
+      // Rotate by angle (matching fn_64471)
+      const rx = (tx * cosAngle - ty * sinAngle);
+      const ry = (tx * sinAngle + ty * cosAngle);
+
+      ringX[idx] = rx;
+      ringY[idx] = ry;
+    }
+
+    ringZ[r] = currentZ;
+    currentZ -= 9;
+  }
+}
+
+// Generate initial chaotic mesh
+generateChaoticMesh(0x904e19);
+
+// Stage Descriptions
+const stageDescriptions = [
+  "<b>Stage 01 (Chaotic Ring Generation):</b> At startup, 75 rings are initialized from the 15-vertex template at 0x60f40. For every ring, the 32-bit LCG PRNG is called 3 times to pick a random rotation angle θ and random (X, Y) displacements.",
+  "<b>Stage 02 (Phosphor Blur Filter):</b> The frame starts by running the 4-tap box filter over buffer 0x60f7c. Every pixel is averaged with its neighbors, creating luminous decay trails.",
+  "<b>Stage 03 (VGA Blit):</b> The 160 active scanlines (320×160 pixels) are blitted to VGA video RAM at 0xA1900, centered vertically on the 320×200 screen.",
+  "<b>Stage 04 (3D Transform & Projection):</b> Self-modifying immediate operands rotate (X, Y) vertices in 3D camera space, apply perspective division (Z / 250), step depth forward (Z -= 8), and wrap near vertices.",
+  "<b>Stage 05 (Depth Fog & Bresenham Line Drawing):</b> The renderer calculates depth-cued color indices (color = 21 - Z/32) and draws lines connecting the 15 vertices of each chaotic ring."
+];
+
+// View Mode Details
+const viewDetails = {
+  composite: "<b>Composite Mode:</b> Full rendering pipeline. 75 chaotic tumbling wire ribbons rendered over the decaying 4-tap feedback blur trails.",
+  wireframe: "<b>Wireframe Only:</b> Shows the crisp 3D chaotic line rings without the blur filter, highlighting the deformed polygonal topology and depth-cueing.",
+  blur: "<b>Blur Feedback Buffer Only:</b> Shows the spatial diffusion trails and phosphor decay alone as the chaotic rings tumble forward.",
+  depth: "<b>Depth Fog Heatmap:</b> Visualizes the per-record depth shade. Brighter green = nearer to camera (Z < 100), Dark green/cyan = distant horizon (Z → 700).",
+  template: "<b>Original 15-Point Profile:</b> This shallow open polyline is the actual table at 0x60f40, not a ring. The highlighted segment advances in drawing order from point 0 to point 14. The demo translates and rotates 75 copies, projects them at different depths, then draws 14 adjacent segments per copy. Pause freezes the highlight; Step advances it. No final-to-first edge is drawn.",
+};
+
+// Bresenham Integer Line Rasterizer into 8-bit FrameBuffer
+function drawLine(x0, y0, x1, y1, color) {
+  x0 = Math.round(x0);
+  y0 = Math.round(y0);
+  x1 = Math.round(x1);
+  y1 = Math.round(y1);
+
+  // Quick bounding box cull
+  if (Math.max(x0, x1) < 0 || Math.min(x0, x1) >= WIDTH ||
+      Math.max(y0, y1) < 0 || Math.min(y0, y1) >= HEIGHT) {
+    return;
+  }
+
+  const dx = Math.abs(x1 - x0);
+  const dy = Math.abs(y1 - y0);
+  const sx = x0 < x1 ? 1 : -1;
+  const sy = y0 < y1 ? 1 : -1;
+  let err = dx - dy;
+  let steps = 0;
+
+  while (steps++ < 1200) {
+    if (x0 >= 0 && x0 < WIDTH && y0 >= 0 && y0 < HEIGHT) {
+      const idx = y0 * WIDTH + x0;
+      frameBuffer[idx] = Math.max(frameBuffer[idx], color);
+    }
+    if (x0 === x1 && y0 === y1) break;
+    const e2 = 2 * err;
+    if (e2 > -dy) {
+      err -= dy;
+      x0 += sx;
+    }
+    if (e2 < dx) {
+      err += dx;
+      y0 += sy;
+    }
+  }
+}
+
+// 4-Tap Frame Buffer Feedback Blur Filter (matching blurBuffer in fn_6424a)
+function applyFeedbackBlur() {
+  for (let y = 1; y < HEIGHT - 1; y++) {
+    const rowOffset = y * WIDTH;
+    for (let x = 1; x < WIDTH - 1; x++) {
+      const idx = rowOffset + x;
+      const left = frameBuffer[idx - 1];
+      const right = frameBuffer[idx + 1];
+      const top = frameBuffer[idx - WIDTH];
+      const center = frameBuffer[idx];
+      // 4-tap spatial average:
+      frameBuffer[idx] = (left + right + top + center) >> 2;
+    }
+  }
+}
+
+function renderWireScene() {
+  if (viewMode === 'template') {
+    renderTemplateMode();
+    return;
+  }
+
+  if (viewMode !== 'wireframe') {
+    applyFeedbackBlur();
+  } else {
+    frameBuffer.fill(0);
+  }
+
+  const rad = (currentPhase * Math.PI) / 180;
+  const cosGlobal = Math.cos(rad);
+  const sinGlobal = Math.sin(rad);
+
+  // 1. Draw 15-Segment Connected Ribbons / Rings (fn_645bd)
+  if (viewMode !== 'blur') {
+    for (let r = 0; r < NUM_RINGS; r++) {
+      const z = ringZ[r];
+      if (z < 15) continue;
+
+      // Depth-Cued Fog Color: near = 21 (bright green), far = 7 (dark green)
+      const shade = Math.floor(z / 32);
+      const color = viewMode === 'depth' 
+        ? Math.max(1, Math.min(22, Math.floor(22 - (z / 700) * 21)))
+        : Math.max(1, Math.min(21, 21 - shade));
+
+      // Project vertices of this ring
+      const sx = new Float32Array(NUM_POINTS_PER_RING);
+      const sy = new Float32Array(NUM_POINTS_PER_RING);
+
+      for (let p = 0; p < NUM_POINTS_PER_RING; p++) {
+        const idx = r * NUM_POINTS_PER_RING + p;
+        const x = ringX[idx];
+        const y = ringY[idx];
+
+        // 3D Camera Rotation around Z-axis
+        const rx = x * cosGlobal - y * sinGlobal;
+        const ry = x * sinGlobal + y * cosGlobal;
+
+        // Perspective Projection (focal distance = 250, screen center = (160, 80))
+        sx[p] = (rx * 250) / z + 160;
+        sy[p] = (ry * 250) / z + 80;
+      }
+
+      // Draw lines along the 15-point deformed ribbon (0->1->2...->14)
+      for (let p = 0; p < NUM_POINTS_PER_RING - 1; p++) {
+        drawLine(sx[p], sy[p], sx[p + 1], sy[p + 1], color);
+      }
+
+      // Connect back point 14 to point 0 to form a closed polygonal loop
+      drawLine(sx[NUM_POINTS_PER_RING - 1], sy[NUM_POINTS_PER_RING - 1], sx[0], sy[0], color);
+
+      // Draw cross-ribbon connector to previous ring for longitudinal structure
+      if (r > 0 && ringZ[r - 1] > 15) {
+        const pConn = (r * 3) % NUM_POINTS_PER_RING;
+        const prevIdx = (r - 1) * NUM_POINTS_PER_RING + pConn;
+        const prevZ = ringZ[r - 1];
+        const px = ringX[prevIdx];
+        const py = ringY[prevIdx];
+        const prx = px * cosGlobal - py * sinGlobal;
+        const pry = px * sinGlobal + py * cosGlobal;
+        const psx = (prx * 250) / prevZ + 160;
+        const psy = (pry * 250) / prevZ + 80;
+        drawLine(sx[pConn], sy[pConn], psx, psy, Math.max(1, color - 4));
+      }
+    }
+  }
+
+  // 2. Render 8-bit FrameBuffer to HTML5 Canvas
+  const imgData = ctx.createImageData(WIDTH, HEIGHT);
+  const data = imgData.data;
+
+  let sampledValHover = 0;
+  let sampledRgbHover = [0, 0, 0];
+
+  for (let i = 0; i < WIDTH * HEIGHT; i++) {
+    const val = frameBuffer[i];
+    const rgb = WIRE_RGB[Math.min(WIRE_RGB.length - 1, val)] || [0,0,0];
+    const px = i * 4;
+
+    data[px] = rgb[0];
+    data[px + 1] = rgb[1];
+    data[px + 2] = rgb[2];
+    data[px + 3] = 255;
+
+    const x = i % WIDTH;
+    const y = Math.floor(i / WIDTH);
+    if (x === hoverX && y === hoverY) {
+      sampledValHover = val;
+      sampledRgbHover = rgb;
+    }
+  }
+
+  ctx.putImageData(imgData, 0, 0);
+
+  // CRT Scanline Overlay
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+  for (let y = 0; y < HEIGHT; y += 2) {
+    ctx.fillRect(0, y, WIDTH, 1);
+  }
+
+  // Update Inspector Panel Readouts
+  document.getElementById('inspCoord').textContent = `${hoverX}, ${hoverY}`;
+  document.getElementById('inspIndex').textContent = `Index: 0x${sampledValHover.toString(16).padStart(2,'0').toUpperCase()} (${sampledValHover})`;
+  document.getElementById('inspDepth').textContent = `Fog Level: ${Math.round((sampledValHover / 21) * 100)}%`;
+  document.getElementById('inspRgb').innerHTML = `<span class="inspect-swatch" style="background: rgb(${sampledRgbHover.join(',')})"></span>(${sampledRgbHover.join(', ')})`;
+
+  // Update Flight Z Positions for Next Frame
+  if (running) {
+    for (let r = 0; r < NUM_RINGS; r++) {
+      ringZ[r] -= 4 * speedMultiplier;
+      if (ringZ[r] < 15) {
+        ringZ[r] += 685;
+      }
+    }
+  }
+
+  // Update Phase UI Readout
+  phaseSlider.value = currentPhase;
+  phaseReadout.textContent = 'PHASE ' + String(currentPhase).padStart(3, '0') + '°';
+}
+
+function renderTemplateMode() {
+  ctx.fillStyle = '#0c0804';
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+  const minX = Math.min(...BASE_TEMPLATE.map(p => p[0]));
+  const maxX = Math.max(...BASE_TEMPLATE.map(p => p[0]));
+  const scale = (WIDTH - 36) / (maxX - minX);
+  const points = BASE_TEMPLATE.map(([x,y]) => [18 + (x-minX)*scale, HEIGHT/2 + y*scale]);
+  const selected = Math.floor(currentPhase / 6) % 14;
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#392418';
+  ctx.beginPath(); ctx.moveTo(18, HEIGHT/2); ctx.lineTo(WIDTH-18, HEIGHT/2); ctx.stroke();
+  for (let i=0;i<14;i++) {
+    ctx.strokeStyle = i === selected ? '#ffd7ba' : '#7d795d';
+    ctx.lineWidth = i === selected ? 3 : 1;
+    ctx.beginPath(); ctx.moveTo(...points[i]); ctx.lineTo(...points[i+1]); ctx.stroke();
+  }
+  points.forEach(([x,y],i) => {
+    ctx.fillStyle = i === selected || i === selected+1 ? '#ffffff' : '#cab692';
+    ctx.fillRect(Math.round(x)-2, Math.round(y)-2, 4, 4);
+  });
+  // Keep text in HTML at native browser resolution, not scaled bitmap canvas.
+  canvasBadge.textContent = `ORIGINAL PROFILE · SEGMENT ${selected+1}/14 · POINT ${selected} → ${selected+1}`;
+}
+
+function animationLoop(timestamp) {
+  if (running && timestamp - lastTimestamp > 33) {
+    currentPhase = (currentPhase + 1) % 361;
+    renderWireScene();
+    lastTimestamp = timestamp;
+  }
+  requestAnimationFrame(animationLoop);
+}
+
+// Event Listeners
+phaseSlider.addEventListener('input', () => {
+  currentPhase = parseInt(phaseSlider.value, 10);
+  renderWireScene();
+});
+
+btnToggle.addEventListener('click', () => {
+  running = !running;
+  btnToggle.textContent = running ? 'Pause' : 'Play';
+  btnToggle.classList.toggle('primary', running);
+});
+
+btnStep.addEventListener('click', () => {
+  running = false;
+  btnToggle.textContent = 'Play';
+  btnToggle.classList.remove('primary');
+  currentPhase = (currentPhase + (viewMode === 'template' ? 6 : 1)) % 361;
+  renderWireScene();
+});
+
+btnSpeed.addEventListener('click', () => {
+  if (speedMultiplier === 1) speedMultiplier = 2;
+  else if (speedMultiplier === 2) speedMultiplier = 0.5;
+  else speedMultiplier = 1;
+  btnSpeed.textContent = speedMultiplier + '× Speed';
+});
+
+btnRegen.addEventListener('click', () => {
+  generateChaoticMesh(Math.floor(Math.random() * 0xffffffff));
+  renderWireScene();
+});
+
+// View Tabs Switcher
+viewTabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    viewTabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    viewMode = tab.dataset.mode;
+    
+    const titles = {
+      composite: 'COMPOSITE · CHAOTIC VORTEX + PHOSPHOR BLUR',
+      wireframe: 'WIREFRAME ONLY (NO BLUR FILTER)',
+      blur: 'BLUR FEEDBACK BUFFER (DECAY TRAILS)',
+      depth: 'DEPTH FOG HEATMAP (PER-RECORD SHADE)',
+      template: 'ORIGINAL PROFILE · 14 ADJACENT SEGMENTS'
+    };
+    canvasBadge.textContent = titles[viewMode] || 'PREVIEW';
+    detailBox.innerHTML = viewDetails[viewMode] || '';
+    renderWireScene();
+  });
+});
+
+// Canvas Mouse Inspector
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  hoverX = Math.floor((e.clientX - rect.left) * scaleX);
+  hoverY = Math.floor((e.clientY - rect.top) * scaleY);
+  hoverX = Math.max(0, Math.min(WIDTH - 1, hoverX));
+  hoverY = Math.max(0, Math.min(HEIGHT - 1, hoverY));
+  renderWireScene();
+});
+
+// Stage Click Handlers
+document.querySelectorAll('.stage').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+    el.classList.add('active');
+    const stageIdx = parseInt(el.dataset.stage, 10);
+    detailBox.innerHTML = stageDescriptions[stageIdx] || '';
+  });
+});
+
+// Initialize
+renderWireScene();
+requestAnimationFrame(animationLoop);
+</script>
+</body>
+</html>

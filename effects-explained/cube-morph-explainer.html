@@ -1,0 +1,1302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inside the 3D Cube/Torus Morph &amp; Environment Mapping | Nation0 Demoscene Anatomy</title>
+<style>
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at 20% 0%, #281814 0, transparent 45%), radial-gradient(ellipse at 80% 100%, #281814 0, transparent 50%), var(--bg);
+  color: var(--ink);
+  font: 15px/1.65 Manrope, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+main {
+  max-width: 1240px;
+  margin: auto;
+  padding: 40px 24px 100px;
+}
+.eyebrow, .tag, .mono {
+  font-family: 'DM Mono', monospace;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.eyebrow {
+  font-size: 13px;
+  color: var(--cyan);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.address {
+  color: var(--violet);
+  font-family: 'JetBrains Mono', 'DM Mono', monospace;
+  font-weight: 600;
+  text-transform: none;
+}
+h1 {
+  font-size: clamp(34px, 5.2vw, 60px);
+  line-height: 1.05;
+  letter-spacing: -.05em;
+  margin: 10px 0 16px;
+  font-weight: 800;
+}
+h1 span.accent {
+  background: linear-gradient(135deg, var(--cyan), #d2d2e7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.lead {
+  max-width: 900px;
+  color: #d2d2e7;
+  font-size: 17.5px;
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+.meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.tag {
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 6px 14px;
+  color: #d2d2e7;
+  background: #180c08c0;
+}
+.tag b {
+  color: var(--gold);
+  font-weight: 600;
+}
+.tag.cyan b { color: var(--cyan); }
+.tag.violet b { color: var(--violet); }
+.tag.pink b { color: var(--pink); }
+
+/* Layout */
+.layout {
+  display: grid;
+  grid-template-columns: 1.22fr .98fr;
+  gap: 22px;
+  margin-bottom: 24px;
+}
+.card {
+  background: linear-gradient(145deg, #281814, #0c0804);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 60px #00000060;
+}
+.card h2 {
+  font-size: 20px;
+  margin: 0 0 6px;
+  letter-spacing: -.02em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sub {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0 0 16px;
+}
+
+/* Screen and Canvas */
+.screen-container {
+  position: relative;
+  background: #000000;
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid #2d351c;
+  overflow: hidden;
+}
+.screen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.view-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.view-tab {
+  background: #180c08;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font: 11px 'DM Mono', monospace;
+  padding: 5px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: .15s ease;
+}
+.view-tab:hover {
+  color: var(--ink);
+  border-color: var(--line-active);
+}
+.view-tab.active {
+  background: #2d351c;
+  border-color: var(--cyan);
+  color: var(--cyan);
+  font-weight: 600;
+}
+.screen-canvas-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 2.5;
+  background: #000000;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #281814;
+}
+.screen-canvas-wrap canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  cursor: crosshair;
+}
+.overlay-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #0c0804e0;
+  border: 1px solid #39412d;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font: 10px 'DM Mono', monospace;
+  color: var(--cyan);
+  pointer-events: none;
+}
+
+/* Inspector Tooltip */
+.inspector-panel {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px;
+  background: #0c0804;
+  border: 1px solid #2d351c;
+  border-radius: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+}
+.inspect-item {
+  display: flex;
+  flex-direction: column;
+}
+.inspect-label {
+  color: var(--muted);
+  font-size: 9px;
+  text-transform: uppercase;
+}
+.inspect-value {
+  color: var(--ink);
+  font-weight: 500;
+  margin-top: 2px;
+}
+.inspect-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-right: 4px;
+  border: 1px solid #ffffff40;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.btn {
+  background: #281814;
+  color: var(--ink);
+  border: 1px solid #414939;
+  padding: 8px 14px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .15s ease;
+}
+.btn:hover {
+  background: #2d351c;
+  border-color: var(--cyan);
+  color: #ffffff;
+}
+.btn.primary {
+  background: #39412d;
+  border-color: #556149;
+  color: var(--cyan);
+}
+.btn.primary:hover {
+  background: #414939;
+}
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 200px;
+}
+input[type=range] {
+  accent-color: var(--cyan);
+  flex: 1;
+  cursor: pointer;
+}
+.readout {
+  min-width: 90px;
+  text-align: right;
+  font: 12px 'DM Mono', monospace;
+  color: var(--gold);
+}
+
+/* Stages List */
+.stages {
+  display: grid;
+  gap: 9px;
+}
+.stage {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  background: #180c08;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: .2s ease;
+}
+.stage:hover {
+  background: #281814;
+  border-color: #39412d;
+}
+.stage.active {
+  background: #281814;
+  border-color: var(--cyan);
+  box-shadow: 0 0 16px #d2d2e715;
+}
+.num {
+  font: 13px 'DM Mono', monospace;
+  color: var(--cyan);
+  padding-top: 2px;
+  font-weight: 600;
+}
+.stage h3 {
+  font-size: 14px;
+  margin: 0 0 3px;
+  font-weight: 700;
+}
+.stage p {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 4px;
+  line-height: 1.5;
+}
+.stage small {
+  font: 10px 'JetBrains Mono', 'DM Mono', monospace;
+  color: var(--gold);
+  display: block;
+}
+
+/* Deep Dive Sections */
+.deep-dive {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-top: 24px;
+}
+.deep-card {
+  background: #180c08;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px;
+}
+.deep-card h3 {
+  font-size: 17px;
+  margin: 0 0 10px;
+  letter-spacing: -.02em;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.badge-tech {
+  font: 10px 'DM Mono', monospace;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: #2d351c;
+  color: var(--cyan);
+  border: 1px solid #414939;
+}
+
+/* Enhanced Math and Formula Presentation */
+.math-card-group {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0;
+}
+.math-card {
+  background: #0c0804;
+  border: 1px solid #2d351c;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.math-card-title {
+  font: 11px 'DM Mono', monospace;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.math-card-title span.source {
+  color: var(--violet);
+  font-weight: 600;
+  text-transform: none;
+}
+.math-formula {
+  font-family: 'JetBrains Mono', 'DM Mono', monospace;
+  font-size: 12.5px;
+  color: #fbebfb;
+  background: #000000;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border-left: 3px solid var(--cyan);
+  margin-bottom: 8px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+.math-formula.gold-border { border-left-color: var(--gold); }
+.math-formula.pink-border { border-left-color: var(--pink); }
+.math-formula.violet-border { border-left-color: var(--violet); }
+.math-legend {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Assembly Code Box */
+.asm-code-box {
+  background: #0c0804;
+  border: 1px solid #2d351c;
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #dfdbeb;
+  overflow-x: auto;
+  white-space: pre;
+}
+.asm-opcode { color: var(--cyan); font-weight: 600; }
+.asm-reg { color: var(--gold); }
+.asm-num { color: var(--violet); }
+.asm-comment { color: #6d7159; font-style: italic; }
+.asm-label { color: var(--pink); font-weight: 700; }
+
+p.desc {
+  font-size: 13.5px;
+  color: #bebe9a;
+  margin: 8px 0 12px;
+  line-height: 1.6;
+}
+
+/* Detail Box */
+.detail-box {
+  background: #0c0804;
+  border-left: 3px solid var(--cyan);
+  border-radius: 0 10px 10px 0;
+  padding: 14px 18px;
+  margin-top: 14px;
+  font-size: 13.5px;
+  color: #d2d2e7;
+}
+.detail-box b {
+  color: var(--ink);
+}
+
+/* Flow Section */
+.flow-card {
+  margin-top: 24px;
+}
+.flow-diagram {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin: 18px 0;
+}
+.flow-step {
+  position: relative;
+  background: #0c0804;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 10px;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+}
+.flow-step:not(:last-child):after {
+  content: '→';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cyan);
+  font-size: 16px;
+  font-weight: 700;
+  z-index: 3;
+}
+.flow-step strong {
+  display: block;
+  color: var(--cyan);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.flow-step span {
+  color: #bebe9a;
+  font-size: 10.5px;
+  display: block;
+}
+.flow-step small {
+  color: var(--violet);
+  font-size: 9.5px;
+  margin-top: 6px;
+  display: block;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+  .layout, .deep-dive {
+    grid-template-columns: 1fr;
+  }
+  .flow-diagram {
+    grid-template-columns: 1fr;
+  }
+  .flow-step:not(:last-child):after {
+    content: '↓';
+    right: 50%;
+    top: auto;
+    bottom: -12px;
+    transform: translateX(50%);
+  }
+}
+footer {
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: #a2a286;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+footer a {
+  color: var(--cyan);
+  text-decoration: none;
+}
+footer a:hover {
+  text-decoration: underline;
+}
+</style>
+<link rel="stylesheet" href="nation0-theme.css">
+</head>
+<body>
+<main>
+<nav class="explanation-nav" aria-label="Effects explained"><a class="home" href="../index.html">← Nation Zero</a><a href="whirlpool-explainer.html">Whirlpool</a><a href="wiremesh-explainer.html">Wire mesh</a><a href="cube-morph-explainer.html" aria-current="page">Cube morph</a><a href="voxel-explainer.html">Voxel</a></nav>
+  <div class="eyebrow">
+    <span>Nation0 Effect Anatomy</span> · 
+    <span class="address">fn_3c124 / fn_380e8 / fn_37dac / fn_332b6 @ 0x3c124</span>
+  </div>
+  <h1>Inside the <span class="accent">3D Cube/Torus Morph &amp; Env Mapping.</span></h1>
+  <p class="lead">
+    How Nation0 achieves real-time 3D geometry morphing between a subdivided cube and a torus, computes dynamic sphere environment mapping (chrome reflection) from rotated surface normals, sorts triangular facets, and rasterizes affine texture spans using fixed-point arithmetic in DOS Mode 13h.
+  </p>
+
+  <div class="meta">
+    <span class="tag">Timeline: <b>~02:30 in Demo (Captures 750..800)</b></span>
+    <span class="tag cyan">Geometry: <b>Original Mesh: 384 Vertices · 768 Triangles</b></span>
+    <span class="tag violet">Morph Math: <b>Dual-Stream 16-Bit Fixed-Point Linear Blend</b></span>
+    <span class="tag pink">Texture Engine: <b>256×256 Chrome Environment Map @ FS:[0]</b></span>
+    <span class="tag">Rasterizer: <b>Affine Span DDA with Sub-Pixel Stepping (fn_332b6)</b></span>
+  </div>
+
+  <section class="review-note"><strong>About this illustration</strong><p>The interactive preview uses the original executable’s 384 vertices, 768 triangles, and vertex correspondence. Coordinate interpolation uses the original separate signed shifts and 511-complement. Shading normals, RGB environment texture, rotation timing, and average-Z sorting remain illustrative; they are not the original rendering pipeline. Its depth view colors visible facets by camera distance; no Z-buffer is used.</p></section>
+<div class="layout">
+    <!-- Interactive View & Canvas -->
+    <section class="card">
+      <div class="screen-header">
+        <h2>Interactive Pipeline Inspector</h2>
+      </div>
+      <div class="screen-container">
+        <div class="screen-header">
+          <div class="view-tabs" id="viewTabs">
+            <button class="view-tab active" data-mode="textured">Full Chrome Env-Mapped</button>
+            <button class="view-tab" data-mode="wireframe">Wireframe Morph Topology</button>
+            <button class="view-tab" data-mode="normals">Surface Normals (UV Vectors)</button>
+            <button class="view-tab" data-mode="envmap">256×256 Env Sphere (FS:[0])</button>
+            <button class="view-tab" data-mode="depth">Facet Depth Sort Heatmap</button>
+          </div>
+          <span class="overlay-badge" id="canvasBadge">COMPOSITE · CHROME ENVIRONMENT MAPPED 3D MORPH</span>
+        </div>
+
+        <div class="screen-canvas-wrap">
+          <canvas id="cubeCanvas" width="320" height="200" aria-label="Interactive simulation of the Nation0 3D cube and torus morphing with environment mapping"></canvas>
+        </div>
+
+        <!-- Live Pixel Inspector -->
+        <div class="inspector-panel" id="inspectorPanel">
+          <div class="inspect-item">
+            <span class="inspect-label">Screen Pos (X, Y)</span>
+            <span class="inspect-value" id="inspCoord">160, 100</span>
+          </div>
+          <div class="inspect-item">
+            <span class="inspect-label">Env Map (U, V)</span>
+            <span class="inspect-value" id="inspUV">U: 128, V: 128</span>
+          </div>
+          <div class="inspect-item">
+            <span class="inspect-label">Morph State (t)</span>
+            <span class="inspect-value" id="inspMorph">Cube: 50% / Torus: 50%</span>
+          </div>
+          <div class="inspect-item">
+            <span class="inspect-label">Sampled Color</span>
+            <span class="inspect-value" id="inspRgb"><span class="inspect-swatch" id="inspSwatch"></span>(0, 0, 0)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="btn primary" id="btnToggle">Pause</button>
+        <button class="btn" id="btnStep">Step Frame</button>
+        <div class="slider-group">
+          <span style="font: 11px 'DM Mono', monospace; color: var(--muted);">MORPH:</span>
+          <input id="morphSlider" type="range" min="0" max="511" value="256" aria-label="Morph Weight">
+          <span id="morphReadout" class="readout">t = 256 (50%)</span>
+        </div>
+        <button class="btn" id="btnShapeTorus">Torus (0%)</button>
+        <button class="btn" id="btnAutoMorph">Auto Morph</button>
+        <button class="btn" id="btnShapeCube">Cube (100%)</button>
+      </div>
+
+      <div class="detail-box" id="detailBox">
+        <b>Active Inspection:</b> Full textured mode. Notice how the metallic chrome reflections ripple across the surface as the sharp 8-corner cube seamlessly bends and inflates into a smooth donut ring.
+      </div>
+    </section>
+
+    <!-- Execution Sequence Stages -->
+    <section class="card">
+      <h2>Rendering Pipeline Stages</h2>
+      <p class="sub">Click a stage to inspect its specific math and memory registers.</p>
+      <div class="stages" id="stagesList">
+        <div class="stage active" data-stage="0">
+          <span class="num">01</span>
+          <div>
+            <h3>Dual-Stream Vertex &amp; Normal Morphing</h3>
+            <p>Every frame, the CPU blends vertex positions and surface normals between the cube coordinates at <code>0x34592</code> and torus coordinates at <code>0x32a92</code> using fixed-point weights t and (511 - t).</p>
+            <small>resumeFn3c124FrameIteration @ 0x3c2b1 · Weights DS:[0x3bdc1]</small>
+          </div>
+        </div>
+
+        <div class="stage" data-stage="1">
+          <span class="num">02</span>
+          <div>
+            <h3>3×3 Matrix Rotation &amp; Composition</h3>
+            <p>Generates yaw, pitch, and roll rotation matrices (`fn_37a2a`) and composes them into a composite 3× 3 transformation matrix (`fn_37b68`).</p>
+            <small>fn_37a2a &amp; fn_37b68 @ 0x37a2a · Angles DS:[0x36295..0x36297]</small>
+          </div>
+        </div>
+
+        <div class="stage" data-stage="2">
+          <span class="num">03</span>
+          <div>
+            <h3>Environment Map (U, V) Coordinate Derivation</h3>
+            <p>Transforms the lookup vectors using patched fixed-point coefficients and adds the packed 0x8080 center bias before texture addressing.</p>
+            <small>fn_37cf7 @ 0x37cf7 · Output UV Table DS:[0x323a8]</small>
+          </div>
+        </div>
+
+        <div class="stage" data-stage="3">
+          <span class="num">04</span>
+          <div>
+            <h3>Backface Culling &amp; Depth Sorting</h3>
+            <p>Culls backward-facing triangles via 2× 2 determinant test, computes distance sort keys (<code>K = ((−Σ(X² + Y² + Z²) + 65535) mod 2³²) &gt;&gt; 8</code>), and emits records and distance keys for the render queue.</p>
+            <small>fn_37dac @ 0x37dac · visible facet records and distance keys</small>
+          </div>
+        </div>
+
+        <div class="stage" data-stage="4">
+          <span class="num">05</span>
+          <div>
+            <h3>Affine Scanline Span Texture Rasterizer</h3>
+            <p>Rasterizes each visible triangle scanline-by-scanline, linearly interpolating (U, V) and fetching texels from segment `FS:[V·256 + U]`.</p>
+            <small>fn_332b6 @ 0x332b6 · Texture Buffer FS:[0x0000]</small>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Deep Dive Math & Transparency Explanations -->
+  <div class="deep-dive">
+    <!-- Deep Dive 1: 16-Bit Fixed-Point Vertex Morphing -->
+    <div class="deep-card">
+      <h3>
+        Dual-Stream 16-Bit Vertex &amp; Normal Morphing
+        <span class="badge-tech">fn_3c124 @ 0x3c2b1</span>
+      </h3>
+      <p class="desc">
+        Nation0 represents both the Cube and the Torus with an <strong>identical topological vertex mesh</strong> (corresponding coordinate and lookup streams). In each frame, the engine interpolates both the 3D coordinates and the surface normal vectors:
+      </p>
+
+      <div class="math-card-group">
+        <div class="math-card">
+          <div class="math-card-title">1. Fixed-Point Linear Blend <span class="source">0x3c2c5</span></div>
+          <div class="math-formula violet-border">P_{morph} = ⌊ ( P_{cube} · t ) / 512 ⌋ + ⌊ ( P_{torus} · (511 - t) ) / 512 ⌋
+N_{morph} = ⌊ ( N_{cube} · t ) / 512 ⌋ + ⌊ ( N_{torus} · (511 - t) ) / 512 ⌋</div>
+          <div class="math-legend">The blend parameter t ∈ [0, 511] is stored at <code>DS:[0x3bdc1]</code>. The original complement is <code>0x1ff − t</code>; each signed product is shifted separately by 9. The preview reverses the UI weight to keep 0 = torus and 511 = cube; the original first stream is the torus. It preserves the 511 complement and each separate signed shift.</div>
+        </div>
+
+        <div class="math-card">
+          <div class="math-card-title">2. Matched Vertex Topology</div>
+          <div class="math-formula gold-border">Original stream A (torus): 0x33392 + offset ↔ Stream B (cube): 0x34e92 + offset
+Offsets run from −0x900 through −2 (1,152 signed words)
+Lookup stream bases come from pointers at DS:[0x3611a] and DS:[0x360e2]</div>
+          <div class="math-legend">Because the two meshes share identical facet index lists, no polygon stitching or dynamic vertex allocation is needed at runtime.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deep Dive 2: Dynamic Sphere Environment Mapping -->
+    <div class="deep-card">
+      <h3>
+        Sphere Environment Mapping (Chrome Reflection)
+        <span class="badge-tech">fn_37cf7 @ 0x37cf7</span>
+      </h3>
+
+      <p class="desc">
+        Environment mapping creates the illusion of a polished chrome surface reflecting a surrounding room. Rather than tracing rays, Nation0 derives texture (U, V) directly from <strong>rotated vertex normal vectors</strong>:
+      </p>
+
+      <div class="math-card-group">
+        <div class="math-card">
+          <div class="math-card-title">1. Camera-Space Normal Transformation <span class="source">0x37d20</span></div>
+          <div class="math-formula">N_{x,cam} = R_{00} · N_x + R_{01} · N_y + R_{02} · N_z
+N_{y,cam} = R_{10} · N_x + R_{11} · N_y + R_{12} · N_z</div>
+          <div class="math-legend">Transforms the surface normal into camera coordinates using the same 3 × 3 matrix that rotates the 3D model.</div>
+        </div>
+
+        <div class="math-card">
+          <div class="math-card-title">2. Direct Reflection UV Projection with 0x8080 Bias <span class="source">0x37d40</span></div>
+          <div class="math-formula pink-border">U = packed transformed lookup low byte + center bias   <span class="comment">// 0x8080 center bias</span>
+V = packed transformed lookup high byte + center bias   <span class="comment">// 256×256 texture map</span></div>
+          <div class="math-legend">The original uses patched fixed-point matrix coefficients, byte packing, and a word addition of 0x8080; the preview uses scaled floating-point normals. The (X, Y) components of the camera-space normal directly index the pre-rendered metallic sphere map.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deep Dive 3: The Assembly Affine Texture Rasterizer -->
+  <div class="deep-card" style="margin-top: 24px;">
+    <h3>
+      The x86 Scanline Affine Texture Rasterizer Loop
+      <span class="badge-tech">fn_332b6 @ 0x332b6</span>
+    </h3>
+    <p class="desc">
+      For each visible triangle, <code>fn_332b6</code> divides the shape into top and bottom trapezoids, steps sub-pixel edge gradients (dX/dY, dU/dY, dV/dY), and executes an ultra-tight inner span loop reading from segment <code>FS:[0]</code>:
+    </p>
+
+    <pre class="asm-code-box">Conceptual affine span (pseudocode, not verbatim assembly):
+for each covered scanline:
+    find left/right X, U and V from triangle edges
+    for each covered pixel:
+        write texture[(V_integer &amp; 255) * 256 + (U_integer &amp; 255)]
+        advance interpolated U and V</pre>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 14px;">
+      <div style="background: #0c0804; padding: 12px 14px; border-radius: 8px; border: 1px solid #2d351c;">
+        <strong style="color: var(--cyan); display: block; font-size: 13px; margin-bottom: 4px;">1. FS Segment Selector Trick</strong>
+        <p style="font-size: 12.5px; color: #bebe9a; margin: 0;">
+          By mapping the 64KB (256 × 256) texture to segment <code>FS</code>, the high 8 bits of <code>BX</code> index the row V and the low 8 bits index column U with zero shift or multiplication instructions!
+        </p>
+      </div>
+      <div style="background: #0c0804; padding: 12px 14px; border-radius: 8px; border: 1px solid #2d351c;">
+        <strong style="color: var(--gold); display: block; font-size: 13px; margin-bottom: 4px;">2. Aspect Ratio Scaling (470 / 512)</strong>
+        <p style="font-size: 12.5px; color: #bebe9a; margin: 0;">
+          In <code>fn_37dac</code>, projected Y coordinates are multiplied by <code>0x1d6</code> (470) and shifted right by 9 (512), correcting for the non-square 1.2:1 pixel aspect ratio of VGA Mode 13h (320 × 200).
+        </p>
+      </div>
+      <div style="background: #0c0804; padding: 12px 14px; border-radius: 8px; border: 1px solid #2d351c;">
+        <strong style="color: var(--pink); display: block; font-size: 13px; margin-bottom: 4px;">3. Backface Determinant</strong>
+        <p style="font-size: 12.5px; color: #bebe9a; margin: 0;">
+          A signed determinant selects the accepted winding (the original accepts a nonnegative result): (X₁ - X₀)(Y₂ - Y₀) - (Y₁ - Y₀)(X₂ - X₀) &lt; 0, rejecting facets with the discarded winding; the proportion varies with geometry and pose.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Visual Pipeline Summary -->
+  <section class="card flow-card">
+    <h2>Complete Morph &amp; Render Pipeline Overview</h2>
+    <div class="flow-diagram">
+      <div class="flow-step">
+        <strong>1. Vertex Morph</strong>
+        <span>Blend Dual-Stream Tables<br>with Weight t ∈ [0, 511]</span>
+        <small>resumeFn3c124FrameIteration</small>
+      </div>
+      <div class="flow-step">
+        <strong>2. 3×3 Matrix Rotate</strong>
+        <span>Compose Euler Angles<br>&amp; Multiply Vertices/Normals</span>
+        <small>fn_37a2a &amp; fn_37b68</small>
+      </div>
+      <div class="flow-step">
+        <strong>3. Env UV Projection</strong>
+        <span>Map Rotated Normal (Nₓ, Nᵧ)<br>to (U, V) + 0x8080</span>
+        <small>fn_37cf7 @ 0x37cf7</small>
+      </div>
+      <div class="flow-step">
+        <strong>4. 3D Project &amp; Sort</strong>
+        <span>Aspect Scaling (470/512)<br>&amp; Distance Sort Keys</span>
+        <small>fn_37dac @ 0x37dac</small>
+      </div>
+      <div class="flow-step">
+        <strong>5. Affine Rasterizer</strong>
+        <span>Draw Textured Spans<br>from Segment FS:[0]</span>
+        <small>fn_332b6 @ 0x332b6</small>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>Source References: <a href="../src/dispatcher-3c124.mjs">src/dispatcher-3c124.mjs</a> · <a href="../src/cube-math-helpers.mjs">src/cube-math-helpers.mjs</a> · <a href="../src/cube-record-rasterizer.mjs">src/cube-record-rasterizer.mjs</a></div>
+    <div>Nation0 x86 Reverse Engineering &amp; Preservation Project</div>
+  </footer>
+</main>
+
+<script>
+// Canvas & Context
+const canvas = document.getElementById('cubeCanvas');
+const ctx = canvas.getContext('2d');
+const morphSlider = document.getElementById('morphSlider');
+const morphReadout = document.getElementById('morphReadout');
+const btnToggle = document.getElementById('btnToggle');
+const btnStep = document.getElementById('btnStep');
+const btnShapeTorus = document.getElementById('btnShapeTorus');
+const btnShapeCube = document.getElementById('btnShapeCube');
+const viewTabs = document.querySelectorAll('.view-tab');
+const canvasBadge = document.getElementById('canvasBadge');
+const detailBox = document.getElementById('detailBox');
+
+const WIDTH = 320;
+const HEIGHT = 200;
+
+// Internal Frame Buffer
+const frameBuffer = new Uint8Array(WIDTH * HEIGHT * 3);
+
+
+// 256x256 Chrome Environment Map (FS:[0])
+const ENV_MAP = new Uint8Array(256 * 256 * 3);
+(function generateChromeEnvMap() {
+  for (let v = 0; v < 256; v++) {
+    const ny = (v - 128) / 120;
+    for (let u = 0; u < 256; u++) {
+      const nx = (u - 128) / 120;
+      const r2 = nx * nx + ny * ny;
+      const idx = (v * 256 + u) * 3;
+
+      if (r2 <= 1.0) {
+        const nz = Math.sqrt(Math.max(0, 1.0 - r2));
+        // Specular highlight from top-right light source (0.5, 0.6, 0.6)
+        const dotLight = Math.max(0, nx * 0.45 + ny * (-0.55) + nz * 0.7);
+        const spec = Math.pow(dotLight, 18);
+        
+        // Metallic horizon line & blue-cyan chrome sky gradient
+        const horizon = Math.sin(ny * 4.0 + nx * 1.5) * 0.5 + 0.5;
+        const baseR = Math.floor(40 + horizon * 120 + spec * 220);
+        const baseG = Math.floor(60 + horizon * 140 + spec * 240);
+        const baseB = Math.floor(90 + horizon * 165 + spec * 255);
+
+        ENV_MAP[idx] = Math.min(255, baseR);
+        ENV_MAP[idx + 1] = Math.min(255, baseG);
+        ENV_MAP[idx + 2] = Math.min(255, baseB);
+      } else {
+        // Outside sphere perimeter -> dark metallic background
+        ENV_MAP[idx] = 10;
+        ENV_MAP[idx + 1] = 15;
+        ENV_MAP[idx + 2] = 25;
+      }
+    }
+  }
+})();
+
+// ORIGINAL_MESH_BEGIN
+// Original EXE tables, DS addresses + 0x0f00 file bias.
+// 384 signed XYZ triples at 0x32a92 / 0x34592; 768 triangle records.
+// fn_372bc cumulatively decodes the matching 0x33392 / 0x34e92 index streams.
+const originalMesh = {"torus":[[244,0,-22],[237,-27,-22],[217,-47,-20],[190,-54,-17],[163,-47,-15],[143,-27,-13],[136,0,-12],[143,27,-13],[163,47,-15],[190,54,-17],[217,47,-20],[237,27,-22],[244,0,25],[237,-27,24],[217,-47,22],[190,-54,19],[163,-47,16],[143,-27,14],[136,0,14],[143,27,14],[163,47,16],[190,54,19],[217,47,22],[237,27,24],[234,0,72],[227,-27,70],[208,-47,64],[182,-54,56],[156,-47,48],[137,-27,42],[130,0,40],[137,27,42],[156,47,48],[182,54,56],[208,47,64],[227,27,70],[216,0,116],[209,-27,113],[192,-47,103],[168,-54,91],[144,-47,78],[126,-27,68],[120,0,65],[126,27,68],[144,47,78],[168,54,91],[192,47,103],[209,27,113],[189,0,156],[183,-27,152],[168,-47,139],[147,-54,122],[126,-47,104],[110,-27,92],[105,0,87],[110,27,92],[126,47,104],[147,54,122],[168,47,139],[183,27,152],[154,0,190],[150,-27,185],[137,-47,169],[120,-54,148],[103,-47,127],[90,-27,111],[86,0,106],[90,27,111],[103,47,127],[120,54,148],[137,47,169],[150,27,185],[114,0,217],[111,-27,210],[101,-47,193],[89,-54,169],[76,-47,145],[67,-27,127],[63,0,121],[67,27,127],[76,47,145],[89,54,169],[101,47,193],[111,27,210],[70,0,235],[68,-27,228],[62,-47,209],[54,-54,183],[46,-47,157],[41,-27,138],[39,0,131],[41,27,138],[46,47,157],[54,54,183],[62,47,209],[68,27,228],[22,0,244],[22,-27,237],[20,-47,217],[17,-54,190],[15,-47,163],[13,-27,143],[12,0,136],[13,27,143],[15,47,163],[17,54,190],[20,47,217],[22,27,237],[-25,0,244],[-24,-27,237],[-22,-47,217],[-19,-54,190],[-16,-47,163],[-14,-27,143],[-14,0,136],[-14,27,143],[-16,47,163],[-19,54,190],[-22,47,217],[-24,27,237],[-72,0,234],[-70,-27,227],[-64,-47,208],[-56,-54,182],[-48,-47,156],[-42,-27,137],[-40,0,130],[-42,27,137],[-48,47,156],[-56,54,182],[-64,47,208],[-70,27,227],[-116,0,216],[-113,-27,209],[-103,-47,192],[-91,-54,168],[-78,-47,144],[-68,-27,126],[-65,0,120],[-68,27,126],[-78,47,144],[-91,54,168],[-103,47,192],[-113,27,209],[-156,0,189],[-152,-27,183],[-139,-47,168],[-122,-54,147],[-104,-47,126],[-92,-27,110],[-87,0,105],[-92,27,110],[-104,47,126],[-122,54,147],[-139,47,168],[-152,27,183],[-190,0,154],[-185,-27,150],[-169,-47,137],[-148,-54,120],[-127,-47,103],[-111,-27,90],[-106,0,86],[-111,27,90],[-127,47,103],[-148,54,120],[-169,47,137],[-185,27,150],[-217,0,114],[-210,-27,111],[-193,-47,101],[-169,-54,89],[-145,-47,76],[-127,-27,67],[-121,0,63],[-127,27,67],[-145,47,76],[-169,54,89],[-193,47,101],[-210,27,111],[-235,0,70],[-228,-27,68],[-209,-47,62],[-183,-54,54],[-157,-47,46],[-138,-27,41],[-131,0,39],[-138,27,41],[-157,47,46],[-183,54,54],[-209,47,62],[-228,27,68],[-244,0,22],[-237,-27,22],[-217,-47,20],[-190,-54,17],[-163,-47,15],[-143,-27,13],[-136,0,12],[-143,27,13],[-163,47,15],[-190,54,17],[-217,47,20],[-237,27,22],[-244,0,-25],[-237,-27,-24],[-217,-47,-22],[-190,-54,-19],[-163,-47,-16],[-143,-27,-14],[-136,0,-14],[-143,27,-14],[-163,47,-16],[-190,54,-19],[-217,47,-22],[-237,27,-24],[-234,0,-72],[-227,-27,-70],[-208,-47,-64],[-182,-54,-56],[-156,-47,-48],[-137,-27,-42],[-130,0,-40],[-137,27,-42],[-156,47,-48],[-182,54,-56],[-208,47,-64],[-227,27,-70],[-216,0,-116],[-209,-27,-113],[-192,-47,-103],[-168,-54,-91],[-144,-47,-78],[-126,-27,-68],[-120,0,-65],[-126,27,-68],[-144,47,-78],[-168,54,-91],[-192,47,-103],[-209,27,-113],[-189,0,-156],[-183,-27,-152],[-168,-47,-139],[-147,-54,-122],[-126,-47,-104],[-110,-27,-92],[-105,0,-87],[-110,27,-92],[-126,47,-104],[-147,54,-122],[-168,47,-139],[-183,27,-152],[-154,0,-190],[-150,-27,-185],[-137,-47,-169],[-120,-54,-148],[-103,-47,-127],[-90,-27,-111],[-86,0,-106],[-90,27,-111],[-103,47,-127],[-120,54,-148],[-137,47,-169],[-150,27,-185],[-114,0,-217],[-111,-27,-210],[-101,-47,-193],[-89,-54,-169],[-76,-47,-145],[-67,-27,-127],[-63,0,-121],[-67,27,-127],[-76,47,-145],[-89,54,-169],[-101,47,-193],[-111,27,-210],[-70,0,-235],[-68,-27,-228],[-62,-47,-209],[-54,-54,-183],[-46,-47,-157],[-41,-27,-138],[-39,0,-131],[-41,27,-138],[-46,47,-157],[-54,54,-183],[-62,47,-209],[-68,27,-228],[-22,0,-244],[-22,-27,-237],[-20,-47,-217],[-17,-54,-190],[-15,-47,-163],[-13,-27,-143],[-12,0,-136],[-13,27,-143],[-15,47,-163],[-17,54,-190],[-20,47,-217],[-22,27,-237],[25,0,-244],[24,-27,-237],[22,-47,-217],[19,-54,-190],[16,-47,-163],[14,-27,-143],[14,0,-136],[14,27,-143],[16,47,-163],[19,54,-190],[22,47,-217],[24,27,-237],[72,0,-234],[70,-27,-227],[64,-47,-208],[56,-54,-182],[48,-47,-156],[42,-27,-137],[40,0,-130],[42,27,-137],[48,47,-156],[56,54,-182],[64,47,-208],[70,27,-227],[116,0,-216],[113,-27,-209],[103,-47,-192],[91,-54,-168],[78,-47,-144],[68,-27,-126],[65,0,-120],[68,27,-126],[78,47,-144],[91,54,-168],[103,47,-192],[113,27,-209],[156,0,-189],[152,-27,-183],[139,-47,-168],[122,-54,-147],[104,-47,-126],[92,-27,-110],[87,0,-105],[92,27,-110],[104,47,-126],[122,54,-147],[139,47,-168],[152,27,-183],[190,0,-154],[185,-27,-150],[169,-47,-137],[148,-54,-120],[127,-47,-103],[111,-27,-90],[106,0,-86],[111,27,-90],[127,47,-103],[148,54,-120],[169,47,-137],[185,27,-150],[217,0,-114],[210,-27,-111],[193,-47,-101],[169,-54,-89],[145,-47,-76],[127,-27,-67],[121,0,-63],[127,27,-67],[145,47,-76],[169,54,-89],[193,47,-101],[210,27,-111],[235,0,-70],[228,-27,-68],[209,-47,-62],[183,-54,-54],[157,-47,-46],[138,-27,-41],[131,0,-39],[138,27,-41],[157,47,-46],[183,54,-54],[209,47,-62],[228,27,-68]],"cube":[[131,0,-17],[131,-35,-16],[131,-127,-15],[131,-127,-13],[73,-127,-11],[0,-128,0],[0,0,0],[0,125,0],[73,124,-11],[131,124,-13],[131,124,-15],[131,35,-16],[132,0,5],[132,-35,4],[131,-127,5],[131,-127,5],[73,-127,5],[0,-128,0],[0,0,0],[0,125,0],[73,124,5],[131,124,5],[131,124,5],[132,35,4],[132,0,25],[132,-35,22],[131,-127,21],[131,-127,20],[73,-127,19],[0,-128,0],[0,0,0],[0,125,0],[73,124,19],[131,124,20],[131,124,21],[132,35,22],[132,0,45],[132,-35,44],[131,-127,39],[131,-127,35],[74,-127,31],[0,-128,0],[0,0,0],[0,125,0],[74,124,31],[131,124,35],[131,124,39],[132,35,44],[132,0,133],[132,-35,80],[131,-127,67],[132,-127,57],[72,-127,47],[0,-128,0],[0,0,0],[0,125,0],[72,124,47],[132,124,57],[131,124,67],[132,35,80],[132,0,132],[131,-35,131],[131,-127,132],[132,-127,131],[73,-127,68],[0,-128,0],[0,0,0],[0,125,0],[73,124,68],[132,124,131],[131,124,132],[131,35,131],[86,0,131],[83,-35,132],[76,-127,132],[76,-127,132],[57,-127,67],[0,-128,0],[0,0,0],[0,125,0],[57,124,67],[76,124,132],[76,124,132],[83,35,132],[52,0,131],[51,-35,131],[46,-127,132],[46,-127,132],[35,-127,67],[0,-128,1],[0,0,0],[0,125,1],[35,124,67],[46,124,132],[46,124,132],[51,35,131],[17,0,131],[16,-35,131],[15,-127,131],[14,-127,131],[11,-127,67],[0,-128,1],[0,0,1],[0,125,1],[11,124,67],[14,124,131],[15,124,131],[16,35,131],[-18,0,132],[-18,-35,132],[-16,-127,131],[-16,-127,131],[-12,-127,67],[0,-128,1],[0,0,1],[0,125,1],[-12,124,67],[-16,124,131],[-16,124,131],[-18,35,132],[-54,0,132],[-52,-35,132],[-48,-127,131],[-47,-127,131],[-36,-127,68],[0,-128,1],[0,0,0],[0,125,1],[-36,124,68],[-47,124,131],[-48,124,131],[-52,35,132],[-87,0,132],[-85,-35,132],[-77,-127,131],[-77,-127,131],[-58,-127,68],[0,-128,0],[0,0,0],[0,125,0],[-58,124,68],[-77,124,131],[-77,124,131],[-85,35,132],[-125,0,132],[-125,-35,132],[-125,-127,131],[-125,-127,132],[-73,-127,67],[0,-128,0],[0,0,0],[0,125,0],[-73,124,67],[-125,124,132],[-125,124,131],[-125,35,132],[-125,0,64],[-125,-35,62],[-125,-127,56],[-124,-127,50],[-73,-127,42],[0,-128,0],[0,0,0],[0,125,0],[-73,124,42],[-124,124,50],[-125,124,56],[-125,35,62],[-124,0,49],[-125,-35,46],[-125,-127,42],[-125,-127,38],[-73,-127,32],[0,-128,0],[0,0,0],[0,125,0],[-73,124,32],[-125,124,38],[-125,124,42],[-125,35,46],[-124,0,32],[-124,-35,31],[-125,-127,29],[-125,-127,25],[-72,-127,21],[0,-128,0],[0,0,0],[0,125,0],[-72,124,21],[-125,124,25],[-125,124,29],[-124,35,31],[-124,0,17],[-124,-35,16],[-124,-127,15],[-125,-127,13],[-73,-127,11],[0,-128,0],[0,0,0],[0,125,0],[-73,124,11],[-125,124,13],[-124,124,15],[-124,35,16],[-125,0,-6],[-126,-35,0],[-124,-127,-1],[-124,-127,0],[-73,-127,-1],[0,-128,0],[0,0,0],[0,125,0],[-73,124,-1],[-124,124,0],[-124,124,-1],[-126,35,0],[-125,0,-36],[-125,-35,-35],[-125,-127,-29],[-124,-127,-24],[-73,-127,-15],[0,-128,0],[0,0,0],[0,125,0],[-73,124,-15],[-124,124,-24],[-125,124,-29],[-125,35,-35],[-125,0,-63],[-125,-35,-60],[-125,-127,-53],[-124,-127,-46],[-74,-127,-38],[0,-128,0],[0,0,0],[0,125,0],[-74,124,-38],[-124,124,-46],[-125,124,-53],[-125,35,-60],[-125,0,-91],[-125,-35,-84],[-124,-127,-78],[-125,-127,-69],[-72,-127,-55],[0,-128,0],[0,0,0],[0,125,0],[-72,124,-55],[-125,124,-69],[-124,124,-78],[-125,35,-84],[-125,0,-128],[-124,-35,-127],[-125,-127,-128],[-125,-127,-127],[-73,-127,-77],[0,-128,0],[0,0,0],[0,125,0],[-73,124,-77],[-125,124,-127],[-125,124,-128],[-124,35,-127],[-86,0,-127],[-83,-35,-128],[-76,-127,-128],[-76,-127,-128],[-57,-127,-77],[0,-128,0],[0,0,0],[0,125,0],[-57,124,-77],[-76,124,-128],[-76,124,-128],[-83,35,-128],[-52,0,-127],[-51,-35,-127],[-46,-127,-128],[-46,-127,-127],[-35,-127,-77],[0,-128,0],[0,0,0],[0,125,-1],[-35,124,-77],[-46,124,-127],[-46,124,-128],[-51,35,-127],[-17,0,-127],[-16,-35,-127],[-15,-127,-127],[-14,-127,-127],[-11,-127,-77],[0,-128,-1],[0,0,-1],[0,125,-1],[-11,124,-77],[-14,124,-127],[-15,124,-127],[-16,35,-127],[18,0,-128],[18,-35,-128],[16,-127,-127],[16,-127,-127],[12,-127,-77],[0,-128,-1],[0,0,-1],[0,125,-1],[12,124,-77],[16,124,-127],[16,124,-127],[18,35,-128],[54,0,-128],[52,-35,-128],[48,-127,-127],[47,-127,-127],[36,-127,-78],[0,-128,-1],[0,0,0],[0,125,-1],[36,124,-78],[47,124,-127],[48,124,-127],[52,35,-128],[87,0,-127],[85,-35,-128],[77,-127,-127],[77,-127,-127],[58,-127,-78],[0,-128,0],[0,0,0],[0,125,0],[58,124,-78],[77,124,-127],[77,124,-127],[85,35,-128],[132,0,-128],[131,-35,-128],[131,-127,-127],[132,-127,-128],[73,-127,-76],[0,-128,0],[0,0,0],[0,125,0],[73,124,-76],[132,124,-128],[131,124,-127],[131,35,-128],[132,0,-76],[131,-35,-70],[132,-127,-65],[131,-127,-59],[73,-127,-46],[0,-128,0],[0,0,0],[0,125,0],[73,124,-46],[131,124,-59],[132,124,-65],[131,35,-70],[131,0,-56],[132,-35,-53],[132,-127,-46],[132,-127,-42],[73,-127,-34],[0,-128,0],[0,0,0],[0,125,0],[73,124,-34],[132,124,-42],[132,124,-46],[132,35,-53],[131,0,-36],[131,-35,-34],[132,-127,-29],[132,-127,-24],[72,-127,-18],[0,-128,0],[0,0,0],[0,125,0],[72,124,-18],[132,124,-24],[132,124,-29],[131,35,-34]],"triangles":[[0,13,1],[0,12,13],[1,14,2],[1,13,14],[2,15,3],[2,14,15],[3,16,4],[3,15,16],[4,17,5],[4,16,17],[5,18,6],[5,17,18],[6,19,7],[6,18,19],[7,20,8],[7,19,20],[8,21,9],[8,20,21],[9,22,10],[9,21,22],[10,23,11],[10,22,23],[11,12,0],[11,23,12],[12,25,13],[12,24,25],[13,26,14],[13,25,26],[14,27,15],[14,26,27],[15,28,16],[15,27,28],[16,29,17],[16,28,29],[17,30,18],[17,29,30],[18,31,19],[18,30,31],[19,32,20],[19,31,32],[20,33,21],[20,32,33],[21,34,22],[21,33,34],[22,35,23],[22,34,35],[23,24,12],[23,35,24],[24,37,25],[24,36,37],[25,38,26],[25,37,38],[26,39,27],[26,38,39],[27,40,28],[27,39,40],[28,41,29],[28,40,41],[29,42,30],[29,41,42],[30,43,31],[30,42,43],[31,44,32],[31,43,44],[32,45,33],[32,44,45],[33,46,34],[33,45,46],[34,47,35],[34,46,47],[35,36,24],[35,47,36],[36,49,37],[36,48,49],[37,50,38],[37,49,50],[38,51,39],[38,50,51],[39,52,40],[39,51,52],[40,53,41],[40,52,53],[41,54,42],[41,53,54],[42,55,43],[42,54,55],[43,56,44],[43,55,56],[44,57,45],[44,56,57],[45,58,46],[45,57,58],[46,59,47],[46,58,59],[47,48,36],[47,59,48],[48,61,49],[48,60,61],[49,62,50],[49,61,62],[50,63,51],[50,62,63],[51,64,52],[51,63,64],[52,65,53],[52,64,65],[53,66,54],[53,65,66],[54,67,55],[54,66,67],[55,68,56],[55,67,68],[56,69,57],[56,68,69],[57,70,58],[57,69,70],[58,71,59],[58,70,71],[59,60,48],[59,71,60],[60,73,61],[60,72,73],[61,74,62],[61,73,74],[62,75,63],[62,74,75],[63,76,64],[63,75,76],[64,77,65],[64,76,77],[65,78,66],[65,77,78],[66,79,67],[66,78,79],[67,80,68],[67,79,80],[68,81,69],[68,80,81],[69,82,70],[69,81,82],[70,83,71],[70,82,83],[71,72,60],[71,83,72],[72,85,73],[72,84,85],[73,86,74],[73,85,86],[74,87,75],[74,86,87],[75,88,76],[75,87,88],[76,89,77],[76,88,89],[77,90,78],[77,89,90],[78,91,79],[78,90,91],[79,92,80],[79,91,92],[80,93,81],[80,92,93],[81,94,82],[81,93,94],[82,95,83],[82,94,95],[83,84,72],[83,95,84],[84,97,85],[84,96,97],[85,98,86],[85,97,98],[86,99,87],[86,98,99],[87,100,88],[87,99,100],[88,101,89],[88,100,101],[89,102,90],[89,101,102],[90,103,91],[90,102,103],[91,104,92],[91,103,104],[92,105,93],[92,104,105],[93,106,94],[93,105,106],[94,107,95],[94,106,107],[95,96,84],[95,107,96],[96,109,97],[96,108,109],[97,110,98],[97,109,110],[98,111,99],[98,110,111],[99,112,100],[99,111,112],[100,113,101],[100,112,113],[101,114,102],[101,113,114],[102,115,103],[102,114,115],[103,116,104],[103,115,116],[104,117,105],[104,116,117],[105,118,106],[105,117,118],[106,119,107],[106,118,119],[107,108,96],[107,119,108],[108,121,109],[108,120,121],[109,122,110],[109,121,122],[110,123,111],[110,122,123],[111,124,112],[111,123,124],[112,125,113],[112,124,125],[113,126,114],[113,125,126],[114,127,115],[114,126,127],[115,128,116],[115,127,128],[116,129,117],[116,128,129],[117,130,118],[117,129,130],[118,131,119],[118,130,131],[119,120,108],[119,131,120],[120,133,121],[120,132,133],[121,134,122],[121,133,134],[122,135,123],[122,134,135],[123,136,124],[123,135,136],[124,137,125],[124,136,137],[125,138,126],[125,137,138],[126,139,127],[126,138,139],[127,140,128],[127,139,140],[128,141,129],[128,140,141],[129,142,130],[129,141,142],[130,143,131],[130,142,143],[131,132,120],[131,143,132],[132,145,133],[132,144,145],[133,146,134],[133,145,146],[134,147,135],[134,146,147],[135,148,136],[135,147,148],[136,149,137],[136,148,149],[137,150,138],[137,149,150],[138,151,139],[138,150,151],[139,152,140],[139,151,152],[140,153,141],[140,152,153],[141,154,142],[141,153,154],[142,155,143],[142,154,155],[143,144,132],[143,155,144],[144,157,145],[144,156,157],[145,158,146],[145,157,158],[146,159,147],[146,158,159],[147,160,148],[147,159,160],[148,161,149],[148,160,161],[149,162,150],[149,161,162],[150,163,151],[150,162,163],[151,164,152],[151,163,164],[152,165,153],[152,164,165],[153,166,154],[153,165,166],[154,167,155],[154,166,167],[155,156,144],[155,167,156],[156,169,157],[156,168,169],[157,170,158],[157,169,170],[158,171,159],[158,170,171],[159,172,160],[159,171,172],[160,173,161],[160,172,173],[161,174,162],[161,173,174],[162,175,163],[162,174,175],[163,176,164],[163,175,176],[164,177,165],[164,176,177],[165,178,166],[165,177,178],[166,179,167],[166,178,179],[167,168,156],[167,179,168],[168,181,169],[168,180,181],[169,182,170],[169,181,182],[170,183,171],[170,182,183],[171,184,172],[171,183,184],[172,185,173],[172,184,185],[173,186,174],[173,185,186],[174,187,175],[174,186,187],[175,188,176],[175,187,188],[176,189,177],[176,188,189],[177,190,178],[177,189,190],[178,191,179],[178,190,191],[179,180,168],[179,191,180],[180,193,181],[180,192,193],[181,194,182],[181,193,194],[182,195,183],[182,194,195],[183,196,184],[183,195,196],[184,197,185],[184,196,197],[185,198,186],[185,197,198],[186,199,187],[186,198,199],[187,200,188],[187,199,200],[188,201,189],[188,200,201],[189,202,190],[189,201,202],[190,203,191],[190,202,203],[191,192,180],[191,203,192],[192,205,193],[192,204,205],[193,206,194],[193,205,206],[194,207,195],[194,206,207],[195,208,196],[195,207,208],[196,209,197],[196,208,209],[197,210,198],[197,209,210],[198,211,199],[198,210,211],[199,212,200],[199,211,212],[200,213,201],[200,212,213],[201,214,202],[201,213,214],[202,215,203],[202,214,215],[203,204,192],[203,215,204],[204,217,205],[204,216,217],[205,218,206],[205,217,218],[206,219,207],[206,218,219],[207,220,208],[207,219,220],[208,221,209],[208,220,221],[209,222,210],[209,221,222],[210,223,211],[210,222,223],[211,224,212],[211,223,224],[212,225,213],[212,224,225],[213,226,214],[213,225,226],[214,227,215],[214,226,227],[215,216,204],[215,227,216],[216,229,217],[216,228,229],[217,230,218],[217,229,230],[218,231,219],[218,230,231],[219,232,220],[219,231,232],[220,233,221],[220,232,233],[221,234,222],[221,233,234],[222,235,223],[222,234,235],[223,236,224],[223,235,236],[224,237,225],[224,236,237],[225,238,226],[225,237,238],[226,239,227],[226,238,239],[227,228,216],[227,239,228],[228,241,229],[228,240,241],[229,242,230],[229,241,242],[230,243,231],[230,242,243],[231,244,232],[231,243,244],[232,245,233],[232,244,245],[233,246,234],[233,245,246],[234,247,235],[234,246,247],[235,248,236],[235,247,248],[236,249,237],[236,248,249],[237,250,238],[237,249,250],[238,251,239],[238,250,251],[239,240,228],[239,251,240],[240,253,241],[240,252,253],[241,254,242],[241,253,254],[242,255,243],[242,254,255],[243,256,244],[243,255,256],[244,257,245],[244,256,257],[245,258,246],[245,257,258],[246,259,247],[246,258,259],[247,260,248],[247,259,260],[248,261,249],[248,260,261],[249,262,250],[249,261,262],[250,263,251],[250,262,263],[251,252,240],[251,263,252],[252,265,253],[252,264,265],[253,266,254],[253,265,266],[254,267,255],[254,266,267],[255,268,256],[255,267,268],[256,269,257],[256,268,269],[257,270,258],[257,269,270],[258,271,259],[258,270,271],[259,272,260],[259,271,272],[260,273,261],[260,272,273],[261,274,262],[261,273,274],[262,275,263],[262,274,275],[263,264,252],[263,275,264],[264,277,265],[264,276,277],[265,278,266],[265,277,278],[266,279,267],[266,278,279],[267,280,268],[267,279,280],[268,281,269],[268,280,281],[269,282,270],[269,281,282],[270,283,271],[270,282,283],[271,284,272],[271,283,284],[272,285,273],[272,284,285],[273,286,274],[273,285,286],[274,287,275],[274,286,287],[275,276,264],[275,287,276],[276,289,277],[276,288,289],[277,290,278],[277,289,290],[278,291,279],[278,290,291],[279,292,280],[279,291,292],[280,293,281],[280,292,293],[281,294,282],[281,293,294],[282,295,283],[282,294,295],[283,296,284],[283,295,296],[284,297,285],[284,296,297],[285,298,286],[285,297,298],[286,299,287],[286,298,299],[287,288,276],[287,299,288],[288,301,289],[288,300,301],[289,302,290],[289,301,302],[290,303,291],[290,302,303],[291,304,292],[291,303,304],[292,305,293],[292,304,305],[293,306,294],[293,305,306],[294,307,295],[294,306,307],[295,308,296],[295,307,308],[296,309,297],[296,308,309],[297,310,298],[297,309,310],[298,311,299],[298,310,311],[299,300,288],[299,311,300],[300,313,301],[300,312,313],[301,314,302],[301,313,314],[302,315,303],[302,314,315],[303,316,304],[303,315,316],[304,317,305],[304,316,317],[305,318,306],[305,317,318],[306,319,307],[306,318,319],[307,320,308],[307,319,320],[308,321,309],[308,320,321],[309,322,310],[309,321,322],[310,323,311],[310,322,323],[311,312,300],[311,323,312],[312,325,313],[312,324,325],[313,326,314],[313,325,326],[314,327,315],[314,326,327],[315,328,316],[315,327,328],[316,329,317],[316,328,329],[317,330,318],[317,329,330],[318,331,319],[318,330,331],[319,332,320],[319,331,332],[320,333,321],[320,332,333],[321,334,322],[321,333,334],[322,335,323],[322,334,335],[323,324,312],[323,335,324],[324,337,325],[324,336,337],[325,338,326],[325,337,338],[326,339,327],[326,338,339],[327,340,328],[327,339,340],[328,341,329],[328,340,341],[329,342,330],[329,341,342],[330,343,331],[330,342,343],[331,344,332],[331,343,344],[332,345,333],[332,344,345],[333,346,334],[333,345,346],[334,347,335],[334,346,347],[335,336,324],[335,347,336],[336,349,337],[336,348,349],[337,350,338],[337,349,350],[338,351,339],[338,350,351],[339,352,340],[339,351,352],[340,353,341],[340,352,353],[341,354,342],[341,353,354],[342,355,343],[342,354,355],[343,356,344],[343,355,356],[344,357,345],[344,356,357],[345,358,346],[345,357,358],[346,359,347],[346,358,359],[347,348,336],[347,359,348],[348,361,349],[348,360,361],[349,362,350],[349,361,362],[350,363,351],[350,362,363],[351,364,352],[351,363,364],[352,365,353],[352,364,365],[353,366,354],[353,365,366],[354,367,355],[354,366,367],[355,368,356],[355,367,368],[356,369,357],[356,368,369],[357,370,358],[357,369,370],[358,371,359],[358,370,371],[359,360,348],[359,371,360],[360,373,361],[360,372,373],[361,374,362],[361,373,374],[362,375,363],[362,374,375],[363,376,364],[363,375,376],[364,377,365],[364,376,377],[365,378,366],[365,377,378],[366,379,367],[366,378,379],[367,380,368],[367,379,380],[368,381,369],[368,380,381],[369,382,370],[369,381,382],[370,383,371],[370,382,383],[371,372,360],[371,383,372],[372,1,373],[372,0,1],[373,2,374],[373,1,2],[374,3,375],[374,2,3],[375,4,376],[375,3,4],[376,5,377],[376,4,5],[377,6,378],[377,5,6],[378,7,379],[378,6,7],[379,8,380],[379,7,8],[380,9,381],[380,8,9],[381,10,382],[381,9,10],[382,11,383],[382,10,11],[383,0,372],[383,11,0]]};
+const cubeVerts = originalMesh.cube;
+const torusVerts = originalMesh.torus;
+const triangles = originalMesh.triangles;
+const NUM_VERTS = cubeVerts.length;
+
+// Shading illustration: average unit face normals at shared original indices.
+// Original fn_377d4 performs its normalization and averaging in fixed point.
+function illustrationNormals(vertices) {
+  const sums = vertices.map(() => [0, 0, 0]);
+  for (const [i0, i1, i2] of triangles) {
+    const a = vertices[i0], b = vertices[i1], c = vertices[i2];
+    const u = b.map((x,k) => x-a[k]), v = c.map((x,k) => x-a[k]);
+    const n = [u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]];
+    const length = Math.hypot(...n) || 1;
+    for (const i of [i0,i1,i2]) for (let k=0;k<3;k++) sums[i][k] += n[k]/length;
+  }
+  return sums.map(n => { const length = Math.hypot(...n) || 1; return n.map(x => x/length); });
+}
+const cubeNormals = illustrationNormals(cubeVerts);
+const torusNormals = illustrationNormals(torusVerts);
+// ORIGINAL_MESH_END
+
+// State
+let running = true;
+let morphWeight = 256; // 0..511 (0 = Torus, 511 = Cube)
+let rotX = 0.5, rotY = 0.4, rotZ = 0.2;
+let viewMode = 'textured';
+let hoverX = 160, hoverY = 100;
+let lastTimestamp = 0;
+let autoMorph = true;
+let morphDirection = 1;
+
+// View Mode Details
+const viewDetails = {
+  textured: "<b>Full Textured Mode:</b> Complete 3D pipeline. Vertex positions and surface normals morph in real time, projecting dynamic chrome reflections from the 256×256 environment map.",
+  wireframe: "<b>Wireframe Morph Topology:</b> Shows the original 384-vertex, 768-triangle mesh morphing from box to donut ring without rendering texture spans.",
+  normals: "<b>Surface Normals (UV Vectors):</b> Visualizes the camera-space normal vectors N⃗ = (Nₓ, Nᵧ) mapped directly to the 2D (U, V) texture coordinates.",
+  envmap: "<b>256×256 Environment Sphere (FS:[0]):</b> Direct inspection of the pre-rendered metallic chrome environment map loaded into segment `FS`.",
+  depth: "<b>Facet Depth Sort Heatmap:</b> Colors the surviving front-facing facets by average camera-space depth. Far facets are drawn first in this illustration; rejected backfaces are not shown. The original uses integer squared-distance keys."
+};
+
+const stageDescriptions = [
+  "<b>Stage 01 (Dual-Stream Morphing):</b> Every frame, the CPU interpolates vertex positions and normal vectors between cube coordinates 0x34592 and torus coordinates 0x32a92 using fixed-point weights t and (511 - t).",
+  "<b>Stage 02 (3×3 Matrix Rotation):</b> Euler angles are converted into direction cosines and composed through fn_37b68 into a single 3×3 rotation matrix.",
+  "<b>Stage 03 (Env Map UV Coordinates):</b> The rotated normal vector components (Nₓ, Nᵧ) are packed and biased by 0x8080 (128, 128) to directly index the environment texture.",
+  "<b>Stage 04 (Backface Culling & Sort):</b> Discards backfacing polygons (2× 2 determinant test) and sorts remaining visible triangles by distance sort keys.",
+  "<b>Stage 05 (Affine Span Rasterizer):</b> fn_332b6 rasterizes horizontal scanline spans, reading texels directly from segment FS:[V·256 + U] with 16.16 DDA stepping."
+];
+
+// Matrix 3x3 Multiply
+function rotatePoint(x, y, z, rX, rY, rZ) {
+  // Yaw (Y), Pitch (X), Roll (Z)
+  let cy = Math.cos(rY), sy = Math.sin(rY);
+  let x1 = x * cy + z * sy;
+  let y1 = y;
+  let z1 = -x * sy + z * cy;
+
+  let cx = Math.cos(rX), sx = Math.sin(rX);
+  let x2 = x1;
+  let y2 = y1 * cx - z1 * sx;
+  let z2 = y1 * sx + z1 * cx;
+
+  let cz = Math.cos(rZ), sz = Math.sin(rZ);
+  let x3 = x2 * cz - y2 * sz;
+  let y3 = x2 * sz + y2 * cz;
+  let z3 = z2;
+
+  return [x3, y3, z3];
+}
+
+// Perspective Project (Aspect ratio 470/512)
+function project(x, y, z) {
+  const zDist = z + 480;
+  if (zDist <= 10) return null;
+  const sx = (x * 230) / zDist + 160;
+  const sy = (y * 230 * (470 / 512)) / zDist + 100;
+  return [sx, sy, zDist];
+}
+
+// Rasterize Triangle with Texture/Color
+function drawTriangle(p0, p1, p2, uv0, uv1, uv2, colorMode, avgZ) {
+  // Sort vertices by Y
+  let v0 = { x: p0[0], y: p0[1], z: p0[2], u: uv0[0], v: uv0[1] };
+  let v1 = { x: p1[0], y: p1[1], z: p1[2], u: uv1[0], v: uv1[1] };
+  let v2 = { x: p2[0], y: p2[1], z: p2[2], u: uv2[0], v: uv2[1] };
+
+  if (v0.y > v1.y) [v0, v1] = [v1, v0];
+  if (v0.y > v2.y) [v0, v2] = [v2, v0];
+  if (v1.y > v2.y) [v1, v2] = [v2, v1];
+
+  const yMin = Math.max(0, Math.ceil(v0.y));
+  const yMax = Math.min(HEIGHT - 1, Math.floor(v2.y));
+  if (yMin > yMax) return;
+
+  const totalHeight = v2.y - v0.y;
+  if (totalHeight <= 0) return;
+
+  for (let y = yMin; y <= yMax; y++) {
+    const secondHalf = y > v1.y || v1.y === v0.y;
+    const segmentHeight = secondHalf ? v2.y - v1.y : v1.y - v0.y;
+    if (segmentHeight <= 0) continue;
+
+    const alpha = (y - v0.y) / totalHeight;
+    const beta = secondHalf ? (y - v1.y) / segmentHeight : (y - v0.y) / segmentHeight;
+
+    let xA = v0.x + (v2.x - v0.x) * alpha;
+    let uA = v0.u + (v2.u - v0.u) * alpha;
+    let vA = v0.v + (v2.v - v0.v) * alpha;
+
+    let xB = secondHalf ? v1.x + (v2.x - v1.x) * beta : v0.x + (v1.x - v0.x) * beta;
+    let uB = secondHalf ? v1.u + (v2.u - v1.u) * beta : v0.u + (v1.u - v0.u) * beta;
+    let vB = secondHalf ? v1.v + (v2.v - v1.v) * beta : v0.v + (v1.v - v0.v) * beta;
+
+    if (xA > xB) {
+      [xA, xB] = [xB, xA];
+      [uA, uB] = [uB, uA];
+      [vA, vB] = [vB, vA];
+    }
+
+    const xStart = Math.max(0, Math.ceil(xA));
+    const xEnd = Math.min(WIDTH - 1, Math.floor(xB));
+    const spanWidth = xB - xA;
+
+    for (let x = xStart; x <= xEnd; x++) {
+      const idx = y * WIDTH + x;
+      const tSpan = spanWidth > 0 ? (x - xA) / spanWidth : 0;
+      const uTex = Math.floor(uA + (uB - uA) * tSpan);
+      const vTex = Math.floor(vA + (vB - vA) * tSpan);
+
+      const uClamped = Math.max(0, Math.min(255, uTex));
+      const vClamped = Math.max(0, Math.min(255, vTex));
+
+      if (colorMode === 'textured') {
+        const texIdx = (vClamped * 256 + uClamped) * 3;
+        frameBuffer[idx * 3] = ENV_MAP[texIdx];
+        frameBuffer[idx * 3 + 1] = ENV_MAP[texIdx + 1];
+        frameBuffer[idx * 3 + 2] = ENV_MAP[texIdx + 2];
+      } else if (colorMode === 'normals') {
+        frameBuffer[idx * 3] = uClamped;
+        frameBuffer[idx * 3 + 1] = vClamped;
+        frameBuffer[idx * 3 + 2] = 160;
+      } else if (colorMode === 'depth') {
+        const depthShade = Math.max(20, Math.min(255, Math.floor(255 - (avgZ - 200) * 0.6)));
+        frameBuffer[idx * 3] = 0;
+        frameBuffer[idx * 3 + 1] = depthShade;
+        frameBuffer[idx * 3 + 2] = Math.floor(depthShade * 0.8);
+      }
+    }
+  }
+}
+
+function renderScene() {
+  if (viewMode === 'envmap') {
+    renderEnvMapPreview();
+    return;
+  }
+
+  // Clear buffers
+  frameBuffer.fill(6);
+
+
+  const tNorm = morphWeight / 511; // 0 = Torus, 1 = Cube
+  const compNorm = 1 - tNorm;
+
+  const morphedVerts = [];
+  const morphedNormals = [];
+  const projectedVerts = [];
+  const uvCoords = [];
+
+  // 1. Dual-Stream Morphing & 3x3 Matrix Transformation
+  for (let i = 0; i < NUM_VERTS; i++) {
+    // Linear Morph
+    const mx = ((cubeVerts[i][0] * morphWeight) >> 9) + ((torusVerts[i][0] * (511 - morphWeight)) >> 9);
+    const my = ((cubeVerts[i][1] * morphWeight) >> 9) + ((torusVerts[i][1] * (511 - morphWeight)) >> 9);
+    const mz = ((cubeVerts[i][2] * morphWeight) >> 9) + ((torusVerts[i][2] * (511 - morphWeight)) >> 9);
+
+    const nx = cubeNormals[i][0] * tNorm + torusNormals[i][0] * compNorm;
+    const ny = cubeNormals[i][1] * tNorm + torusNormals[i][1] * compNorm;
+    const nz = cubeNormals[i][2] * tNorm + torusNormals[i][2] * compNorm;
+
+    // Rotate Vertex
+    const [rx, ry, rz] = rotatePoint(mx, my, mz, rotX, rotY, rotZ);
+    morphedVerts.push([rx, ry, rz]);
+
+    // Rotate Normal Vector into Camera Coordinates
+    const [rnx, rny, rnz] = rotatePoint(nx, ny, nz, rotX, rotY, rotZ);
+    morphedNormals.push([rnx, rny, rnz]);
+
+    // Map Rotated Normal directly to (U, V) with 0x8080 bias
+    const u = Math.floor(rnx * 115) + 128;
+    const v = Math.floor(rny * 115) + 128;
+    uvCoords.push([u, v]);
+
+    // 3D Perspective Projection
+    const proj = project(rx, ry, rz);
+    projectedVerts.push(proj);
+  }
+
+  // 2. Backface Culling & Triangles Sorting
+  const renderList = [];
+  for (let i = 0; i < triangles.length; i++) {
+    const [i0, i1, i2] = triangles[i];
+    const p0 = projectedVerts[i0];
+    const p1 = projectedVerts[i1];
+    const p2 = projectedVerts[i2];
+
+    if (!p0 || !p1 || !p2) continue;
+
+    // 2x2 Determinant Backface Test: (x1 - x0)*(y2 - y0) - (y1 - y0)*(x2 - x0)
+    const cross = (p1[0] - p0[0]) * (p2[1] - p0[1]) - (p1[1] - p0[1]) * (p2[0] - p0[0]);
+    // The original triangle indices wind outward. With this preview's camera at
+    // (0, 0, -480), positive Z forward and positive canvas Y down, outward
+    // front faces have a NEGATIVE projected determinant. The original's
+    // record determinant operands differ from this preview’s conventional determinant.
+    if (cross >= 0) continue;
+
+    const avgZ = (p0[2] + p1[2] + p2[2]) / 3;
+    renderList.push({
+      p0, p1, p2,
+      uv0: uvCoords[i0],
+      uv1: uvCoords[i1],
+      uv2: uvCoords[i2],
+      avgZ
+    });
+  }
+
+  // Sort by depth (Painters Algorithm: back to front)
+  renderList.sort((a, b) => b.avgZ - a.avgZ);
+
+  // 3. Rasterize Triangles
+  if (viewMode !== 'wireframe') {
+    renderList.forEach(tri => {
+      drawTriangle(tri.p0, tri.p1, tri.p2, tri.uv0, tri.uv1, tri.uv2, viewMode, tri.avgZ);
+    });
+  }
+
+  // 4. Render to HTML5 Canvas
+  const imgData = ctx.createImageData(WIDTH, HEIGHT);
+  const data = imgData.data;
+
+  let sampledRgb = [0, 0, 0];
+  let sampledUV = [128, 128];
+
+  for (let y = 0; y < HEIGHT; y++) {
+    for (let x = 0; x < WIDTH; x++) {
+      const idx = y * WIDTH + x;
+      const px = idx * 4;
+
+      if (viewMode === 'wireframe') {
+        data[px] = 6;
+        data[px + 1] = 10;
+        data[px + 2] = 16;
+        data[px + 3] = 255;
+      } else {
+        data[px] = frameBuffer[idx * 3];
+        data[px + 1] = frameBuffer[idx * 3 + 1];
+        data[px + 2] = frameBuffer[idx * 3 + 2];
+        data[px + 3] = 255;
+      }
+
+      if (x === hoverX && y === hoverY) {
+        sampledRgb = [data[px], data[px + 1], data[px + 2]];
+      }
+    }
+  }
+
+  ctx.putImageData(imgData, 0, 0);
+
+  // Draw Wireframe Overlay if in wireframe mode
+  if (viewMode === 'wireframe') {
+    ctx.strokeStyle = '#d2d2e7';
+    ctx.lineWidth = 1;
+    renderList.forEach(tri => {
+      ctx.beginPath();
+      ctx.moveTo(tri.p0[0], tri.p0[1]);
+      ctx.lineTo(tri.p1[0], tri.p1[1]);
+      ctx.lineTo(tri.p2[0], tri.p2[1]);
+      ctx.closePath();
+      ctx.stroke();
+    });
+  }
+
+  // CRT Scanline Overlay
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.16)';
+  for (let y = 0; y < HEIGHT; y += 2) {
+    ctx.fillRect(0, y, WIDTH, 1);
+  }
+
+  // Update Inspector Panel
+  const cubePct = Math.round((morphWeight / 511) * 100);
+  const torusPct = 100 - cubePct;
+  document.getElementById('inspCoord').textContent = `${hoverX}, ${hoverY}`;
+  document.getElementById('inspUV').textContent = 'UV interpolation (not RGB)';
+  document.getElementById('inspMorph').textContent = `Cube: ${cubePct}% / Torus: ${torusPct}%`;
+  document.getElementById('inspRgb').innerHTML = `<span class="inspect-swatch" style="background: rgb(${sampledRgb.join(',')})"></span>(${sampledRgb.join(', ')})`;
+
+  // Auto Rotation & Morph Animation
+  if (running) {
+    rotX += 0.015;
+    rotY += 0.022;
+    rotZ += 0.008;
+
+    if (autoMorph) {
+      morphWeight += morphDirection * 2;
+      if (morphWeight >= 511) {
+        morphWeight = 511;
+        morphDirection = -1;
+      } else if (morphWeight <= 0) {
+        morphWeight = 0;
+        morphDirection = 1;
+      }
+      morphSlider.value = morphWeight;
+      morphReadout.textContent = `t = ${morphWeight} (${Math.round((morphWeight / 511) * 100)}%)`;
+    }
+  }
+}
+
+function renderEnvMapPreview() {
+  const imgData = ctx.createImageData(256, 256);
+  const data = imgData.data;
+
+  ctx.fillStyle = '#0c0804';
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+  for (let v = 0; v < 256; v++) {
+    const texV = v;
+    for (let u = 0; u < 256; u++) {
+      const srcIdx = (texV * 256 + u) * 3;
+      const dstIdx = (v * 256 + u) * 4;
+
+      data[dstIdx] = ENV_MAP[srcIdx];
+      data[dstIdx + 1] = ENV_MAP[srcIdx + 1];
+      data[dstIdx + 2] = ENV_MAP[srcIdx + 2];
+      data[dstIdx + 3] = 255;
+    }
+  }
+
+  const preview = document.createElement('canvas');
+  preview.width = preview.height = 256;
+  preview.getContext('2d').putImageData(imgData, 0, 0);
+  ctx.clearRect(0, 0, WIDTH, HEIGHT);
+  ctx.drawImage(preview, 60, 0, 200, 200);
+
+  ctx.strokeStyle = '#d2d2e7';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(60, 0, 200, 200);
+
+  ctx.fillStyle = '#fbebfb';
+  ctx.font = '11px DM Mono';
+  ctx.fillText('256×256 CHROME ENVIRONMENT MAP @ FS:[0]', 38, 20);
+}
+
+function animationLoop(timestamp) {
+  if (running && timestamp - lastTimestamp > 33) {
+    renderScene();
+    lastTimestamp = timestamp;
+  }
+  requestAnimationFrame(animationLoop);
+}
+
+// Event Listeners
+document.getElementById('btnAutoMorph').addEventListener('click', () => { autoMorph = true; running = true; btnToggle.textContent = 'Pause'; btnToggle.classList.add('primary'); });
+morphSlider.addEventListener('input', () => {
+  autoMorph = false;
+  morphWeight = parseInt(morphSlider.value, 10);
+  morphReadout.textContent = `t = ${morphWeight} (${Math.round((morphWeight / 511) * 100)}%)`;
+  renderScene();
+});
+
+btnShapeTorus.addEventListener('click', () => {
+  autoMorph = false;
+  morphWeight = 0;
+  morphSlider.value = 0;
+  morphReadout.textContent = 't = 0 (100% Torus)';
+  renderScene();
+});
+
+btnShapeCube.addEventListener('click', () => {
+  autoMorph = false;
+  morphWeight = 511;
+  morphSlider.value = 511;
+  morphReadout.textContent = 't = 511 (100% Cube)';
+  renderScene();
+});
+
+btnToggle.addEventListener('click', () => {
+  running = !running;
+  btnToggle.textContent = running ? 'Pause' : 'Play';
+  btnToggle.classList.toggle('primary', running);
+});
+
+btnStep.addEventListener('click', () => {
+  running = false;
+  btnToggle.textContent = 'Play';
+  btnToggle.classList.remove('primary');
+  rotX += 0.05;
+  rotY += 0.05;
+  renderScene();
+});
+
+// View Tabs
+viewTabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    viewTabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    viewMode = tab.dataset.mode;
+
+    const titles = {
+      textured: 'COMPOSITE · CHROME ENVIRONMENT MAPPED 3D MORPH',
+      wireframe: 'WIREFRAME MORPH TOPOLOGY (SUBDIVIDED FACET GRID)',
+      normals: 'SURFACE NORMALS (UV PROJECTION PLANE)',
+      envmap: '256×256 ENVIRONMENT SPHERE (SEGMENT FS:[0])',
+      depth: 'FACET DEPTH SORT HEATMAP (PAINTERS QUEUE)'
+    };
+    canvasBadge.textContent = titles[viewMode] || 'PREVIEW';
+    detailBox.innerHTML = viewDetails[viewMode] || '';
+    renderScene();
+  });
+});
+
+// Mouse Inspector
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  hoverX = Math.floor((e.clientX - rect.left) * scaleX);
+  hoverY = Math.floor((e.clientY - rect.top) * scaleY);
+  hoverX = Math.max(0, Math.min(WIDTH - 1, hoverX));
+  hoverY = Math.max(0, Math.min(HEIGHT - 1, hoverY));
+  renderScene();
+});
+
+// Stages Click
+document.querySelectorAll('.stage').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+    el.classList.add('active');
+    const stageIdx = parseInt(el.dataset.stage, 10);
+    detailBox.innerHTML = stageDescriptions[stageIdx] || '';
+  });
+});
+
+// Initialize
+renderScene();
+requestAnimationFrame(animationLoop);
+</script>
+</body>
+</html>

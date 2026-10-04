@@ -1,0 +1,59 @@
+/* Nation0 DAC palette: warm shadows, olive, peach, rose and lavender. */
+:root {
+  color-scheme: dark;
+  --bg: #0c0804;
+  --panel: #21140f;
+  --panel-light: #392418;
+  --line: #552d28;
+  --line-active: #7d494d;
+  --ink: #ffffff;
+  --muted: #cab692;
+  --cyan: #ffd7ba;
+  --gold: #ffedcd;
+  --violet: #e3d2ff;
+  --pink: #c282be;
+  --green: #b5b193;
+  --emerald: #7d795d;
+  --blue: #e3d2ff;
+  --orange: #ffd7ba;
+}
+body {
+  background: radial-gradient(ellipse at 15% 0%, #552d283d, transparent 50%),
+    radial-gradient(ellipse at 90% 100%, #7d494d26, transparent 50%), var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+.eyebrow, .tag, .mono, .address, code, pre { font-family: ui-monospace, Consolas, monospace; }
+h1 span.accent { background-image: linear-gradient(135deg, var(--cyan), var(--violet)); }
+a { color: var(--violet); }
+a:hover { color: #fff; }
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--violet); outline-offset: 4px;
+}
+.explanation-nav {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px;
+  margin: 0 0 30px; padding: 14px 0; border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.explanation-nav a { text-decoration: none; padding: 3px 0; }
+.explanation-nav .home { margin-right: auto; color: var(--ink); }
+.explanation-nav [aria-current='page'] { color: var(--cyan); text-decoration: underline; text-underline-offset: 6px; }
+.layout > *, .deep-card, .card, .math-card { min-width: 0; }
+.math-formula, pre { max-width: 100%; overflow-x: auto; }
+.view-tabs { flex-wrap: wrap; }
+canvas { max-width: 100%; }
+input[type='range'] { accent-color: var(--pink); }
+@media (max-width: 640px) {
+  main { padding: 20px 14px 60px; }
+  .explanation-nav { gap: 8px 14px; }
+  .explanation-nav .home { flex-basis: 100%; }
+  div[style*='grid-template-columns'] { grid-template-columns: 1fr !important; }
+  .stats-row, .flow-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+
+/* The mode label occupies its own row instead of covering the first tab. */
+.overlay-badge { position: static; display: block; width: fit-content; max-width: 100%; margin: 10px 0; overflow-wrap: anywhere; }
+.review-note { padding: 16px 20px; margin: 0 0 24px; border: 1px solid var(--line-active); border-radius: 10px; background: var(--panel); color: var(--muted); font-size: 14px; line-height: 1.7; }
+.review-note strong { color: var(--ink); }
+.review-note p { margin: 6px 0 0; }
+.screen-container > .screen-header { flex-direction: column; align-items: stretch; }
